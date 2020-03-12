@@ -1,0 +1,27 @@
+
+/*
+ * 自定义变量文件
+ */
+
+:root {
+  /* color */
+  --color-primary                                           : #3B86FF;
+  --color-primary-2                                         : #0865FF;
+  --color-white                                             : #fff;
+  --bg-color-base                                           : var(--color-white);
+  --bg-color-assist                                         : #2F323A;
+  --color-base                                              : #222;
+  --color-gray                                              : #999;
+  --color-gray-2                                            : #BBBBBB;
+  --color-dark-gray                                         : #333;
+  --color-danger                                            : #FF677D;
+  --color-warning                                           : #FFAA02;
+  --color-disable                                           : #697B98;
+  --color-more-difficult                                    : #853BFF;
+  --color-success                                           : #33CD90;
+  --color-assist-gray                                       : #787878;
+  --color-primary-light                                     : #CDE5FF;
+  --bg-color-primary                                        : #ff9c00;
+  --br-color-base                                           : #DDDDDD;
+  --br-color-base-1                                         : #EEEEEE;
+}
