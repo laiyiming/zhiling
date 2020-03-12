@@ -38,7 +38,7 @@ export default {
   methods: {
     toRoute() {
       // this.$router.push({ path: "/project/project-content" });
-      this.$router.push({ path: "/project-content" });
+      this.$router.push({ path: "content" });
     }
   }
 };

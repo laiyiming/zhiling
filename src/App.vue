@@ -1,17 +1,12 @@
 <template>
   <div id="app">
-    <PageView />
+    <RouterView />
   </div>
 </template>
 
 <script>
-import PageView from "./views/common/PageView.vue";
-
 export default {
   name: "app",
-  components: {
-    PageView
-  }
 };
 </script>
 
