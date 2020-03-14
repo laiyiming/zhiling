@@ -3,12 +3,12 @@ import { MessageBox } from "element-ui";
 
 var websock = null;
 var global_callback = null;
-var serverPort = "6900"; // webSocket连接端口
+var serverPort = "8282"; // webSocket连接端口
 var timestamp = null;
 function initWebSocket() {
   // 初始化weosocket
   // ws地址
-  var wsuri = "ws:47.110.9.151:" + serverPort;
+  var wsuri = "ws:coopez.cn:" + serverPort;
   // var wsuri = 'ws://www.stqcm.com:' + serverPort;
   // var wsuri = 'ws://121.199.63.114:' + serverPort;
   websock = new WebSocket(wsuri);
@@ -84,8 +84,22 @@ function websocketclose(e) {
   );
 }
 
-function websocketOpen(e) {
+// function websocketOpen(e) {
+//   console.log("连接成功");
+// }
+
+function websocketOpen() {
   console.log("连接成功");
+  const token = JSON.parse(localStorage.getItem("token"));
+  const path = {
+    api: "api_home_index_reconnect",
+    data: {
+      token
+    }
+  };
+  sendSock(JSON.stringify(path), res => {
+    console.log(res);
+  });
 }
 
 // 监听页面操作的时间戳

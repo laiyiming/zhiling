@@ -1,0 +1,50 @@
+
+.el-dialog   .el-dialog__header{
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 15px;
+}
+
+.el-input__inner {
+  background: #e5e5e5;
+}
+.el-form-item__bottom {
+  display: flex;
+  flex-direction: row-reverse;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 25px;
+}
+
+.el-form-item__bottom .el-button {
+  padding: 11px 34px 11px 33px;
+  border: none;
+  font-size: 14px;
+  border-radius: 2px;
+}
+
+.el-form-item__bottom .el-button:first-child {
+  background: rgba(44, 109, 210, 0.2);
+  color: #2c6dd2;
+}
+
+.el-form-item__bottom .el-button:last-child {
+  background: #2c6dd2;
+  color: #ffffff;
+}
+
+
+ .el-input .el-input__count .el-input__count-inner{
+  background: #e5e5e5;
+}
+
+.el-textarea__inner {
+  background: #e5e5e5;
+}
+
+.el-textarea .el-input__count {
+  background: #e5e5e5;
+}
+
+.el-range-input {
+  background: #e5e5e5;
+}
+

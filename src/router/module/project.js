@@ -1,30 +1,80 @@
 export default [
   {
-    path: '/project',
-    name: 'Project',
+    path: "/project",
+    name: "Project",
     meta: {
-      title: '项目',
+      title: "项目"
     },
-    redirect: '/project/index',
-    component: () => import(/* webpackChunkName: "common" */ '@/views/common/PageView.vue'),
+    redirect: "/project/index",
+    component: () =>
+      import(/* webpackChunkName: "common" */ "@/views/common/PageView.vue"),
     children: [
       {
-        path: 'index',
-        name: 'Project-index',
+        path: "index",
+        name: "Project-index",
         meta: {
-          title: '项目列表',
+          title: "项目列表"
         },
-        component: () => import(/* webpackChunkName: "lessons-paper" */ '@/views/project/index.vue'),
+        component: () =>
+          import(
+            /* webpackChunkName: "Project-index" */ "@/views/project/index.vue"
+          )
       },
       {
-        path: 'content',
-        name: 'project-content',
+        path: "content",
+        name: "project-content",
         meta: {
-          title: '项目内容',
+          title: "项目内容"
         },
-        component: () => import(/* webpackChunkName: "lessons-paper" */ '@/views/project/ProjectContent.vue'),
+        component: () =>
+          import(
+            /* webpackChunkName: "project-content" */ "@/views/project/ProjectContent.vue"
+          )
       },
-
+      {
+        path: "member",
+        name: "project-member",
+        meta: {
+          title: "项目成员"
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "project-member" */ "@/views/project/ProjectMember.vue"
+          )
+      },
+      {
+        path: "task",
+        name: "project-task",
+        meta: {
+          title: "任务列表"
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "project-member" */ "@/views/project/TaskList.vue"
+          )
+      },
+      {
+        path: "add-task",
+        name: "project-add-task",
+        meta: {
+          title: "添加任务"
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "project-member" */ "@/views/project/AddTask.vue"
+          )
+      },
+      {
+        path: "project-view",
+        name: "project-view",
+        meta: {
+          title: "任务详情"
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "project-member" */ "@/views/project/ProjectView.vue"
+          )
+      }
     ]
   }
   // {

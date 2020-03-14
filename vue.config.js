@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = {
   /**
    * You will need to set publicPath if you plan to deploy your site under a sub path,
@@ -28,3 +30,12 @@ module.exports = {
     }
   }
 };
+
+// function addStyleResource(rule) {
+//   rule
+//     .use('style-resource')
+//     .loader('style-resources-loader')
+//     .options({
+//       patterns: [path.resolve(__dirname, './src/styles/common.css')]
+//     });
+// }

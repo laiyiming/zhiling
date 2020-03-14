@@ -35,7 +35,7 @@ export default {
 <style lang="less">
 .page-view {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   background: #f2f2f2;
 
   & .page-view__right {

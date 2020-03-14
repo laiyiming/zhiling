@@ -3,19 +3,40 @@
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
+        <el-breadcrumb-item
+          ><a href="/">{{ title }}</a></el-breadcrumb-item
+        >
       </el-breadcrumb>
       <div class="project-index__header-button">
-        <el-button class="project-index__button-del">删除项目</el-button>
-        <el-button class="project-index__button-add">+添加清单</el-button>
-        <el-button class="project-index__button-add">+添加清单</el-button>
+        <el-button class="project-index__button-del" @click="addLargeClass"
+          >+添加大类</el-button
+        >
+        <el-button class="project-index__button-add" @click="addDetailedList"
+          >+添加清单</el-button
+        >
+        <el-button class="project-index__button-add">+添加成员</el-button>
       </div>
     </div>
     <div class="project-content__content">
       <div class="project-content__list">
         <p class="project-content__list-title">
           供应商
-          <el-popover placement="bottom" width="400" trigger="click">
-            <div>sasdas</div>
+          <el-popover
+            placement="bottom"
+            width="113"
+            trigger="click"
+            popper-class="project-content__popover-lei"
+          >
+            <ul class="project-content__list-popover-lei">
+              <li>
+                <img src="@/assets/icon/cmm.png" />
+                重命名
+              </li>
+              <li>
+                <img src="@/assets/icon/shangchu.png" />
+                删除大类
+              </li>
+            </ul>
             <div class="project-content__list-title__img" slot="reference">
               <img src="@/assets/icon/gd@2x.png" />
             </div>
@@ -26,36 +47,180 @@
           <div class="project-content__list-item-div">
             网点市场
           </div>
-          <img src="@/assets/icon/bianji.png" />
+
+          <el-popover
+            placement="bottom"
+            width="113"
+            trigger="click"
+            popper-class="project-content__popover-lei"
+          >
+            <ul class="project-content__list-popover-lei">
+              <li>
+                <img src="@/assets/icon/cmm.png" />
+                重命名
+              </li>
+              <li>
+                <img src="@/assets/icon/shangchu.png" />
+                删除大类
+              </li>
+              <li>
+                <img src="@/assets/icon/xiugaidalei.png" />
+                修改大类
+              </li>
+            </ul>
+            <div class="project-content__list-item__img" slot="reference">
+              <img src="@/assets/icon/bianji.png" />
+            </div>
+          </el-popover>
         </div>
         <div class="project-content__list-item">
           <p class="project-content__status2">开始</p>
           <div class="project-content__list-item-div">
             网点市场
           </div>
-          <img src="@/assets/icon/bianji.png" />
+          <el-popover
+            placement="bottom"
+            width="113"
+            trigger="click"
+            popper-class="project-content__popover-lei"
+          >
+            <ul class="project-content__list-popover-lei">
+              <li>
+                <img src="@/assets/icon/cmm.png" />
+                重命名
+              </li>
+              <li>
+                <img src="@/assets/icon/shangchu.png" />
+                删除大类
+              </li>
+              <li>
+                <img src="@/assets/icon/xiugaidalei.png" />
+                修改大类
+              </li>
+            </ul>
+            <div class="project-content__list-item__img" slot="reference">
+              <img src="@/assets/icon/bianji.png" />
+            </div>
+          </el-popover>
         </div>
         <div class="project-content__list-item">
           <p class="project-content__status3">完成</p>
           <div class="project-content__list-item-div">
             网点市场
           </div>
-          <img src="@/assets/icon/bianji.png" />
+          <el-popover
+            placement="bottom"
+            width="113"
+            trigger="click"
+            popper-class="project-content__popover-lei"
+          >
+            <ul class="project-content__list-popover-lei">
+              <li>
+                <img src="@/assets/icon/cmm.png" />
+                重命名
+              </li>
+              <li>
+                <img src="@/assets/icon/shangchu.png" />
+                删除大类
+              </li>
+              <li>
+                <img src="@/assets/icon/xiugaidalei.png" />
+                修改大类
+              </li>
+            </ul>
+            <div class="project-content__list-item__img" slot="reference">
+              <img src="@/assets/icon/bianji.png" />
+            </div>
+          </el-popover>
         </div>
         <div class="project-content__list-item">
           <p class="project-content__status4">归档</p>
           <div class="project-content__list-item-div">
             网点市场
           </div>
-          <img src="@/assets/icon/bianji.png" />
+          <el-popover
+            placement="bottom"
+            width="113"
+            trigger="click"
+            popper-class="project-content__popover-lei"
+          >
+            <ul class="project-content__list-popover-lei">
+              <li>
+                <img src="@/assets/icon/cmm.png" />
+                重命名
+              </li>
+              <li>
+                <img src="@/assets/icon/shangchu.png" />
+                删除大类
+              </li>
+              <li>
+                <img src="@/assets/icon/xiugaidalei.png" />
+                修改大类
+              </li>
+            </ul>
+            <div class="project-content__list-item__img" slot="reference">
+              <img src="@/assets/icon/bianji.png" />
+            </div>
+          </el-popover>
         </div>
       </div>
     </div>
+    <el-dialog
+      :visible.sync="dialogVisible"
+      title="添加清单"
+      custom-class="contentdialog"
+      width="718px"
+      center
+    >
+      <AddDetailedList />
+    </el-dialog>
+    <el-dialog
+      :visible.sync="classVisible"
+      title="添加大类"
+      custom-class="contentdialog"
+      width="718px"
+      center
+    >
+      <AddLargeClass />
+    </el-dialog>
   </div>
 </template>
 
 <script>
-export default {};
+import AddDetailedList from "./AddDetailedList";
+import AddLargeClass from "./AddLargeClass";
+export default {
+  name: "ProjectContent",
+  components: {
+    AddDetailedList,
+    AddLargeClass
+  },
+  data() {
+    return {
+      title: "",
+      dialogVisible: false,
+      classVisible: false
+    };
+  },
+
+  created() {
+    this.init();
+  },
+
+  methods: {
+    init() {
+      this.title = this.$route.query.name;
+    },
+
+    addDetailedList() {
+      this.dialogVisible = true;
+    },
+
+    addLargeClass() {
+      this.classVisible = true;
+    }
+  }
+};
 </script>
 <style lang="less">
 .project-content {
@@ -155,12 +320,18 @@ export default {};
         flex: 1;
       }
 
-      > img {
-        position: absolute;
+      & .project-content__list-item__img {
         width: 20px;
         height: 20px;
         top: 7px;
         right: 7px;
+        cursor: pointer;
+        position: absolute;
+
+        > img {
+          width: 20px;
+          height: 20px;
+        }
       }
 
       & .project-content__status1 {
@@ -175,6 +346,26 @@ export default {};
       & .project-content__status4 {
         background: #ff6b6b;
       }
+    }
+  }
+}
+.project-content__popover-lei {
+  & .project-content__list-popover-lei {
+    > li {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      border-bottom: 1px solid #e5e5e5;
+      cursor: pointer;
+
+      > img {
+        width: 20px;
+        height: 20px;
+        margin-right: 7px;
+      }
+    }
+    > li:last-child {
+      border: none;
     }
   }
 }
