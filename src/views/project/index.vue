@@ -19,18 +19,9 @@
           <div>
             {{ list.describ }}
           </div>
-          <el-button @click="toRoute('生态鲜管理系统')">进入项目</el-button>
+          <el-button @click="toRoute(list.Id)">进入项目</el-button>
         </div>
-      </li>
-      <li>
-        <img src="" alt="" />
-        <div class="project-index__ul-item">
-          <p>生态鲜管理系统</p>
-          <div>
-            生态鲜(厦门)信息技术有限公司成立于2019年07月02日，注册地位于厦门市思明区塔埔东路168号24层2405单元B区，法人代表为王晓坪。
-          </div>
-          <el-button @click="toRoute('生态鲜管理系统')">进入项目</el-button>
-        </div>
+        <img class="project-index__ul-sc" src="@/assets/icon/sc.png" @click="delDialog(list.Id)" />
       </li>
     </ul>
     <el-dialog
@@ -69,6 +60,17 @@
     >
       <AddProject @backAdd="backAdd" />
     </el-dialog>
+    <el-dialog
+      title="提示"
+      :visible.sync="delVisible"
+      width="30%"
+      center>
+      <span>确认删除！</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="delVisible = false">取 消</el-button>
+        <el-button type="primary" @click="delVisibleCom">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -86,6 +88,7 @@ export default {
       projectVisible: false,
       indexLoading: false,
       dialogFormVisible: false,
+      delVisible: false,
       form: {
         phone: null,
         code: null
@@ -93,7 +96,8 @@ export default {
       show: true, // 初始启用按钮
       count: "", // 初始化次数
       timer: null,
-      projectList: []
+      projectList: [],
+      delId: ''
     };
   },
 
@@ -113,6 +117,7 @@ export default {
   methods: {
     // 项目列表初始化
     init() {
+      this.indexLoading = true;
       const path = {
         api: "api_project_index_list"
       };
@@ -128,15 +133,15 @@ export default {
 
     backAdd() {
       this.projectVisible = false;
+      this.init()
     },
 
     // 跳转系统
-    toRoute(name) {
-      // this.$router.push({ path: "/project/project-content" });
+    toRoute(id) {
       this.$router.push({
         path: "content",
         query: {
-          name
+          id
         }
       });
     },
@@ -173,27 +178,55 @@ export default {
     },
 
     socketData(res) {
-      console.log(res);
       if (res !== '{"type":"ping"}') {
         const resj = JSON.parse(res);
         if (resj.code === -1) {
           this.$message.error(resj.message);
         } else {
+          // 获取验证码
           if (resj.api === "api_home_index_code") {
             console.log(resj);
           }
+          //登入
           if (resj.api === "api_home_index_login") {
             localStorage.setItem("token", JSON.stringify(resj.data.token));
             this.dialogFormVisible = false;
             this.indexLoading = false;
             console.log(resj);
           }
+          // 获取项目列表
           if (resj.api === "api_project_index_list") {
             this.projectList = resj.data.projects;
-            console.log(resj, 878);
+          }
+          // 删除项目
+          if (resj.api === "api_project_index_del") {
+            if(resj.code === 0) {
+              this.delVisible = false
+              this.$message.success('删除成功！')
+              this.init()
+            }
           }
         }
       }
+      this.indexLoading = false;
+    },
+
+    delDialog(id) {
+      console.log(id)
+      this.delId = id;
+      this.delVisible = true
+    },
+
+    delVisibleCom() {
+      const path = {
+        api: "api_project_index_del",
+        data: {
+          project_id: this.delId,
+        }
+      }
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
     },
 
     loginTo() {
@@ -273,6 +306,7 @@ export default {
       display: flex;
       margin: 23px 0 0 23px;
       align-items: flex-start;
+      position: relative;
       padding: 34px 50px 33px 34px;
       box-shadow: 0px 6px 16px 0px rgba(0, 0, 0, 0.09);
 
@@ -282,6 +316,16 @@ export default {
         flex-shrink: 0;
         margin-right: 30px;
         background: chartreuse;
+      }
+
+      & .project-index__ul-sc {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 20px;
+        height: 20px; 
+        margin-right: 0;
+        background: none;
       }
 
       & .project-index__ul-item {

@@ -1,5 +1,5 @@
 <template>
-  <div class="project-content">
+  <div v-loading="initLoading" class="project-content">
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
@@ -18,7 +18,9 @@
       </div>
     </div>
     <div class="project-content__content">
-      <div class="project-content__list">
+      <div 
+        
+        class="project-content__list">
         <p class="project-content__list-title">
           供应商
           <el-popover
@@ -181,7 +183,7 @@
       width="718px"
       center
     >
-      <AddLargeClass />
+      <AddLargeClass :id="id" @closeDialog="closeDialog" />
     </el-dialog>
   </div>
 </template>
@@ -198,8 +200,12 @@ export default {
   data() {
     return {
       title: "",
+      id: null,
       dialogVisible: false,
-      classVisible: false
+      classVisible: false,
+      initLoading: false,
+      moduel: [],
+      qinlist: []
     };
   },
 
@@ -209,7 +215,44 @@ export default {
 
   methods: {
     init() {
-      this.title = this.$route.query.name;
+      this.initLoading = true
+      this.id = this.$route.query.id;
+
+      const path = {
+          api: "api_moduel_index_list",
+          data: {
+            project_id: `${this.id}`
+          }
+        };
+        this.socketApi.sendSock(JSON.stringify(path), res => {
+          this.socketData(res);
+        });
+    },
+
+    // 关闭dialog弹窗
+    closeDialog(type) {
+      this.classVisible = false
+      this.dialogVisible = false
+      if(type === "success") {
+        this.init()
+      }
+    },
+
+    socketData(res) {
+      if (res !== '{"type":"ping"}') {
+        const resj = JSON.parse(res);
+        if (resj.code === -1) {
+          this.$message.error(resj.message);
+        } else {
+          // 获取验证码
+          if (resj.api === "api_moduel_index_list") {
+            console.log(resj);
+            this.moduel = resj.moduels
+            this.qinlist = resj.lists 
+          }
+        }
+      }
+    this.initLoading = false;
     },
 
     addDetailedList() {

@@ -66,11 +66,12 @@ export default {
       this.$refs.form.validate(valid => {
         if (valid) {
           const path = {
-            api: "api_home_index_add",
+            api: "api_project_index_add",
             data: {
               ...this.form
             }
           };
+          console.log(path)
           this.socketApi.sendSock(JSON.stringify(path), res => {
             this.socketData(res);
           });
@@ -86,14 +87,12 @@ export default {
     },
 
     socketData(res) {
-      console.log(res);
       if (res !== '{"type":"ping"}') {
         const resj = JSON.parse(res);
         if (resj.code === -1) {
           this.$message.error(resj.message);
         } else {
-          if (resj.api === "api_home_index_add") {
-            console.log(resj);
+          if (resj.api === "api_project_index_add") {
             this.$message.success("添加成功!");
             this.$emit("backAdd");
           }
