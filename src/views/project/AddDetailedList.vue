@@ -13,10 +13,10 @@
         placeholder="请输入项目名称"
       />
     </el-form-item>
-    <el-form-item label="活动区域">
-      <el-select v-model="ruleForm.region" placeholder="请选择活动区域">
-        <el-option label="区域一" value="shanghai"></el-option>
-        <el-option label="区域二" value="beijing"></el-option>
+    <el-form-item label="所属大类">
+      <el-select v-model="ruleForm.region" placeholder="请选择所属大类">
+        <el-option label="不分类" value=""></el-option>
+        <el-option v-for="list in moduel" :label="list.name" :value="list.Id"></el-option>
       </el-select>
     </el-form-item>
     <el-form-item class="el-form-item__bottom">
@@ -29,6 +29,12 @@
 <script>
 export default {
   name: "AddDetailedList",
+  props: {
+    moduel: {
+      type: Array,
+      default: () => ([])
+    }
+  },
   data() {
     return {
       ruleForm: {

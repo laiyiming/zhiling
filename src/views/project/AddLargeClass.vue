@@ -21,7 +21,20 @@ export default {
     id: {
       type: String,
       default: ''
+    },
+    type: {
+      type: String,
+      default: ''
+    },
+    moduelId: {
+      type: String,
+      default: null
+    },
+    moduelName: {
+      type: String,
+      default: null
     }
+    
   },
   data() {
     return {
@@ -35,17 +48,38 @@ export default {
       }
     };
   },
+
+  watch: {
+    moduelName: {
+      handler(val) {
+        if(!this.$util.isEmpty(val)) {
+          this.form.name = val
+        } else {
+          this.form.name = ''
+        }
+      },
+      immediate: true,
+      deep: true
+    }
+  },
+
   methods: {
     onSubmit(submit) {
       this.$refs.form.validate(valid => {
         if (valid) {
-
-          const path = {
-            api: "api_moduel_index_add",
-            data: {
-              project_id: `${this.id}`,
-              name: this.form.name
+          let data = {
+            project_id: `${this.id}`,
+            name: this.form.name
+          }
+          if(this.type === 'edit') {
+            data = {
+              ...data,
+              moduel_id: this.moduelId
             }
+          }
+          const path = {
+            api: 'api_moduel_index_add',
+            data
           };
           this.socketApi.sendSock(JSON.stringify(path), res => {
             this.socketData(res);
