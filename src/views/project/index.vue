@@ -67,7 +67,7 @@
       width="718px"
       center
     >
-      <AddProject />
+      <AddProject @backAdd="backAdd" />
     </el-dialog>
   </div>
 </template>
@@ -98,18 +98,16 @@ export default {
   },
 
   created() {
-    // const _this = this;
-    // const token = JSON.parse(localStorage.getItem("token"));
-    // console.log(token, 888);
-    // if (token === "" || token === null) {
-    //   this.dialogFormVisible = true;
-    // } else {
-    //   this.dialogFormVisible = false;
-    //   setTimeout(function() {
-    //     _this.init();
-    //   }, 1000);
-    // }
-    // this.getcode();
+    const _this = this;
+    const token = JSON.parse(localStorage.getItem("token"));
+    if (token === "" || token === null) {
+      this.dialogFormVisible = true;
+    } else {
+      this.dialogFormVisible = false;
+      setTimeout(function() {
+        _this.init();
+      }, 1000);
+    }
   },
 
   methods: {
@@ -126,6 +124,10 @@ export default {
     // 添加项目
     addProject() {
       this.projectVisible = true;
+    },
+
+    backAdd() {
+      this.projectVisible = false;
     },
 
     // 跳转系统
@@ -169,21 +171,6 @@ export default {
         }, 1000);
       }
     },
-
-    // getcode() {
-    //   const path = {
-    //     api: "api_home_index_code",
-    //     data: {
-    //       phone: "19906013146"
-    //     }
-    //   };
-
-    //   this.socketApi.sendSock(JSON.stringify(path), res => {
-    //     if (res) {
-    //       this.socketData(res);
-    //     }
-    //   });
-    // }
 
     socketData(res) {
       console.log(res);

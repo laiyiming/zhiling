@@ -1,6 +1,12 @@
 <template>
-  <el-form ref="form" :model="form" class="add-project" label-width="130px">
-    <el-form-item label="项目名称">
+  <el-form
+    ref="form"
+    :rules="rules"
+    :model="form"
+    class="add-project"
+    label-width="130px"
+  >
+    <el-form-item label="项目名称" prop="name">
       <el-input
         v-model="form.name"
         style="width: 511px"
@@ -11,7 +17,7 @@
     </el-form-item>
     <el-form-item label="项目简介">
       <el-input
-        v-model="form.jianjie"
+        v-model="form.describ"
         type="textarea"
         style="width: 511px"
         placeholder="请输入项目简介"
@@ -32,7 +38,7 @@
       </el-upload>
     </el-form-item>
     <el-form-item class="el-form-item__bottom">
-      <el-button>取消</el-button>
+      <el-button @click="onClose">取消</el-button>
       <el-button type="primary" @click="onSubmit">确认</el-button>
     </el-form-item>
   </el-form>
@@ -45,14 +51,54 @@ export default {
     return {
       form: {
         name: null,
-        jianjie: null
+        describ: null
       },
-      imageUrl: ""
+      imageUrl: "",
+      rules: {
+        name: [
+          { required: true, message: "项目名称不可为空", trigger: "change" }
+        ]
+      }
     };
   },
   methods: {
-    onSubmit(submit) {
-      console.log(submit);
+    onSubmit() {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          const path = {
+            api: "api_home_index_add",
+            data: {
+              ...this.form
+            }
+          };
+          this.socketApi.sendSock(JSON.stringify(path), res => {
+            this.socketData(res);
+          });
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+
+    onClose() {
+      this.$emit("backAdd");
+    },
+
+    socketData(res) {
+      console.log(res);
+      if (res !== '{"type":"ping"}') {
+        const resj = JSON.parse(res);
+        if (resj.code === -1) {
+          this.$message.error(resj.message);
+        } else {
+          if (resj.api === "api_home_index_add") {
+            console.log(resj);
+            this.$message.success("添加成功!");
+            this.$emit("backAdd");
+          }
+        }
+      }
     },
 
     handleAvatarSuccess(res, file) {
