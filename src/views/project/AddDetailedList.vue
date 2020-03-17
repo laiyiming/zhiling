@@ -52,6 +52,7 @@ export default {
       default: null
     }
   },
+
   data() {
     return {
       form: {
@@ -65,6 +66,7 @@ export default {
       }
     };
   },
+  
   methods: {
     onSubmit() {
       this.$refs.form.validate(valid => {
@@ -72,20 +74,21 @@ export default {
           let data = {
             name: this.form.name,
             project_id: `${this.id}`,
-            moduel_id: this.form.moduel_id
+            moduel_id: `${this.form.moduel_id}`
           };
-          let api = "api_lists_index_add";
+          let api = "api_moduel_lists_add";
           if (this.type === "edit") {
             api = "api_moduel_index_rename";
             data = {
               ...data,
-              moduel_id: this.moduelId
+              moduel_id: this.form.moduel_id
             };
           }
           const path = {
             api,
             data
           };
+          console.log(path, 998)
           this.socketApi.sendSock(JSON.stringify(path), res => {
             this.socketData(res);
           });
@@ -97,17 +100,17 @@ export default {
     },
 
     socketData(res) {
-      console.log(res);
+      console.log(res, 989);
       if (res !== '{"type":"ping"}') {
         const resj = JSON.parse(res);
         if (resj.code === -1) {
           this.$message.error(resj.message);
         } else {
           // 获取验证码
-          if (resj.api === "api_lists_index_add") {
+          if (resj.api === "api_moduel_lists_add") {
             if (resj.code === 0) {
               this.$message.success("添加成功！");
-              // this.close();
+              this.close();
             }
           }
           // if (resj.api === "api_moduel_index_rename") {
