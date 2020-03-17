@@ -14,7 +14,9 @@
         >
           +添加大类
         </el-button>
-        <el-button class="project-index__button-add" @click="addDetailedList"
+        <el-button
+          class="project-index__button-add"
+          @click="addDetailedList('add')"
           >+添加清单</el-button
         >
         <el-button class="project-index__button-add">+添加成员</el-button>
@@ -179,7 +181,13 @@
       width="718px"
       center
     >
-      <AddDetailedList :moduel="moduel" />
+      <AddDetailedList
+        :moduel="moduel"
+        :id="id"
+        :moduel-id="moduelId"
+        :type="moduelType"
+        @closeDialog="closeDialog"
+      />
     </el-dialog>
     <el-dialog
       :visible.sync="classVisible"
@@ -195,6 +203,13 @@
         :type="moduelType"
         @closeDialog="closeDialog"
       />
+    </el-dialog>
+    <el-dialog title="提示" :visible.sync="delVisible" width="30%" center>
+      <span>确认删除！</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="delVisible = false">取 消</el-button>
+        <el-button type="primary" @click="delVisibleCom">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -221,7 +236,8 @@ export default {
       moduelTitle: "",
       moduelId: "",
       moduelType: "",
-      moduelName: ""
+      moduelName: "",
+      delVisible: false
     };
   },
 
@@ -232,7 +248,7 @@ export default {
   methods: {
     init() {
       this.initLoading = true;
-      this.id = this.$route.query.id;
+      this.id = +this.$route.query.id;
 
       const path = {
         api: "api_moduel_index_list",
@@ -254,31 +270,58 @@ export default {
       }
     },
 
-    delModuel() {},
+    // 删除大类弹窗
+    delModuel(id) {
+      this.moduelId = id;
+      this.delVisible = true;
+    },
 
+    // socket请求统一处理
     socketData(res) {
       if (res !== '{"type":"ping"}') {
         const resj = JSON.parse(res);
         if (resj.code === -1) {
           this.$message.error(resj.message);
         } else {
-          // 获取验证码
+          // 获取大类列表
           if (resj.api === "api_moduel_index_list") {
             this.moduel = resj.data.moduels;
             this.moduelList = resj.data.moduels;
             this.qinlist = resj.lists;
+          }
+          // 获取
+          if (resj.api === "api_moduel_index_del") {
+            this.delVisible = false;
+            this.$message.success("删除成功！");
+            this.init();
           }
         }
       }
       this.initLoading = false;
     },
 
-    addDetailedList() {
-      this.dialogVisible = true;
+    // 删除大类
+    delVisibleCom() {
+      const path = {
+        api: "api_moduel_index_del",
+        data: {
+          project_id: `${this.id}`,
+          moduel_id: `${this.moduelId}`
+        }
+      };
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
     },
 
+    // 添加清单弹窗
+    addDetailedList(type) {
+      this.dialogVisible = true;
+      this.moduelType = type;
+    },
+
+    // 添加编辑大类弹窗
     addLargeClass(type, item) {
-      console.log(item, 999);
       if (type === "add") {
         this.moduelTitle = "添加大类";
         this.moduelType = type;
@@ -345,6 +388,7 @@ export default {
     overflow: hidden;
     border: 1px solid #e5e5e5;
     border-bottom: none;
+    margin-right: 24px;
 
     & .project-content__list-title {
       height: 59px;

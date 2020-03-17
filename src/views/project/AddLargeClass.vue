@@ -25,8 +25,8 @@ export default {
   name: "AddLargeClass",
   props: {
     id: {
-      type: String,
-      default: ""
+      type: Number,
+      default: null
     },
     type: {
       type: String,
@@ -76,14 +76,16 @@ export default {
             project_id: `${this.id}`,
             name: this.form.name
           };
+          let api = "api_moduel_index_add";
           if (this.type === "edit") {
+            api = "api_moduel_index_rename";
             data = {
               ...data,
               moduel_id: this.moduelId
             };
           }
           const path = {
-            api: "api_moduel_index_add",
+            api,
             data
           };
           this.socketApi.sendSock(JSON.stringify(path), res => {
@@ -97,7 +99,6 @@ export default {
     },
 
     socketData(res) {
-      console.log(res);
       if (res !== '{"type":"ping"}') {
         const resj = JSON.parse(res);
         if (resj.code === -1) {
@@ -107,8 +108,14 @@ export default {
           if (resj.api === "api_moduel_index_add") {
             if (resj.code === 0) {
               this.$message.success("添加成功！");
+              this.close();
             }
-            console.log(resj);
+          }
+          if (resj.api === "api_moduel_index_rename") {
+            if (resj.code === 0) {
+              this.$message.success("修改成功！");
+              this.close();
+            }
           }
         }
       }
