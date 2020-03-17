@@ -21,7 +21,11 @@
           </div>
           <el-button @click="toRoute(list.Id)">进入项目</el-button>
         </div>
-        <img class="project-index__ul-sc" src="@/assets/icon/sc.png" @click="delDialog(list.Id)" />
+        <img
+          class="project-index__ul-sc"
+          src="@/assets/icon/sc.png"
+          @click="delDialog(list.Id)"
+        />
       </li>
     </ul>
     <el-dialog
@@ -60,11 +64,7 @@
     >
       <AddProject @backAdd="backAdd" />
     </el-dialog>
-    <el-dialog
-      title="提示"
-      :visible.sync="delVisible"
-      width="30%"
-      center>
+    <el-dialog title="提示" :visible.sync="delVisible" width="30%" center>
       <span>确认删除！</span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="delVisible = false">取 消</el-button>
@@ -97,7 +97,7 @@ export default {
       count: "", // 初始化次数
       timer: null,
       projectList: [],
-      delId: ''
+      delId: ""
     };
   },
 
@@ -133,7 +133,7 @@ export default {
 
     backAdd() {
       this.projectVisible = false;
-      this.init()
+      this.init();
     },
 
     // 跳转系统
@@ -200,10 +200,10 @@ export default {
           }
           // 删除项目
           if (resj.api === "api_project_index_del") {
-            if(resj.code === 0) {
-              this.delVisible = false
-              this.$message.success('删除成功！')
-              this.init()
+            if (resj.code === 0) {
+              this.delVisible = false;
+              this.$message.success("删除成功！");
+              this.init();
             }
           }
         }
@@ -212,18 +212,18 @@ export default {
     },
 
     delDialog(id) {
-      console.log(id)
+      console.log(id);
       this.delId = id;
-      this.delVisible = true
+      this.delVisible = true;
     },
 
     delVisibleCom() {
       const path = {
         api: "api_project_index_del",
         data: {
-          project_id: this.delId,
+          project_id: this.delId
         }
-      }
+      };
       this.socketApi.sendSock(JSON.stringify(path), res => {
         this.socketData(res);
       });
@@ -323,7 +323,7 @@ export default {
         top: 15px;
         right: 15px;
         width: 20px;
-        height: 20px; 
+        height: 20px;
         margin-right: 0;
         background: none;
       }

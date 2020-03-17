@@ -16,7 +16,12 @@
     <el-form-item label="所属大类">
       <el-select v-model="ruleForm.region" placeholder="请选择所属大类">
         <el-option label="不分类" value=""></el-option>
-        <el-option v-for="list in moduel" :label="list.name" :value="list.Id"></el-option>
+        <el-option
+          v-for="(list, key) in moduel"
+          :key="key"
+          :label="list.name"
+          :value="list.Id"
+        ></el-option>
       </el-select>
     </el-form-item>
     <el-form-item class="el-form-item__bottom">
@@ -32,7 +37,7 @@ export default {
   props: {
     moduel: {
       type: Array,
-      default: () => ([])
+      default: () => []
     }
   },
   data() {

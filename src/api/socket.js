@@ -8,8 +8,8 @@ var timestamp = null;
 function initWebSocket() {
   // 初始化weosocket
   // ws地址
-  // var wsuri = "ws:192.168.101.200:" + serverPort;
-  var wsuri = "ws:coopez.cn:" + serverPort;
+  var wsuri = "ws:192.168.101.200:" + serverPort;
+  // var wsuri = "ws:coopez.cn:" + serverPort;
   // var wsuri = 'ws://www.stqcm.com:' + serverPort;
   // var wsuri = 'ws://121.199.63.114:' + serverPort;
   websock = new WebSocket(wsuri);

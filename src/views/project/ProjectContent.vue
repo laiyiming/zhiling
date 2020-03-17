@@ -8,9 +8,12 @@
         >
       </el-breadcrumb>
       <div class="project-index__header-button">
-        <el-button class="project-index__button-del" @click="addLargeClass('add')" >
+        <el-button
+          class="project-index__button-del"
+          @click="addLargeClass('add')"
+        >
           +添加大类
-          </el-button>
+        </el-button>
         <el-button class="project-index__button-add" @click="addDetailedList"
           >+添加清单</el-button
         >
@@ -18,10 +21,11 @@
       </div>
     </div>
     <div class="project-content__content">
-      <div 
+      <div
         v-for="item in moduelList"
         :key="item.Id"
-        class="project-content__list">
+        class="project-content__list"
+      >
         <p class="project-content__list-title">
           {{ item.name }}
           <el-popover
@@ -175,7 +179,7 @@
       width="718px"
       center
     >
-      <AddDetailedList :moduel="moduel"/>
+      <AddDetailedList :moduel="moduel" />
     </el-dialog>
     <el-dialog
       :visible.sync="classVisible"
@@ -184,7 +188,13 @@
       width="718px"
       center
     >
-      <AddLargeClass :id="id" :moduel-id="moduelId" :moduel-name="moduelName" :type="moduelType" @closeDialog="closeDialog" />
+      <AddLargeClass
+        :id="id"
+        :moduel-id="moduelId"
+        :moduel-name="moduelName"
+        :type="moduelType"
+        @closeDialog="closeDialog"
+      />
     </el-dialog>
   </div>
 </template>
@@ -208,10 +218,10 @@ export default {
       moduel: [],
       moduelList: [],
       qinlist: [],
-      moduelTitle: '',
-      moduelId: '',
-      moduelType: '',
-      moduelName: ''
+      moduelTitle: "",
+      moduelId: "",
+      moduelType: "",
+      moduelName: ""
     };
   },
 
@@ -221,32 +231,30 @@ export default {
 
   methods: {
     init() {
-      this.initLoading = true
+      this.initLoading = true;
       this.id = this.$route.query.id;
 
       const path = {
-          api: "api_moduel_index_list",
-          data: {
-            project_id: `${this.id}`
-          }
-        };
-        this.socketApi.sendSock(JSON.stringify(path), res => {
-          this.socketData(res);
-        });
+        api: "api_moduel_index_list",
+        data: {
+          project_id: `${this.id}`
+        }
+      };
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
     },
 
     // 关闭dialog弹窗
     closeDialog(type) {
-      this.classVisible = false
-      this.dialogVisible = false
-      if(type === "success") {
-        this.init()
+      this.classVisible = false;
+      this.dialogVisible = false;
+      if (type === "success") {
+        this.init();
       }
     },
 
-    delModuel() {
-
-    },
+    delModuel() {},
 
     socketData(res) {
       if (res !== '{"type":"ping"}') {
@@ -256,13 +264,13 @@ export default {
         } else {
           // 获取验证码
           if (resj.api === "api_moduel_index_list") {
-            this.moduel = resj.data.moduels
-            this.moduelList = resj.data.moduels
-            this.qinlist = resj.lists 
+            this.moduel = resj.data.moduels;
+            this.moduelList = resj.data.moduels;
+            this.qinlist = resj.lists;
           }
         }
       }
-    this.initLoading = false;
+      this.initLoading = false;
     },
 
     addDetailedList() {
@@ -270,16 +278,16 @@ export default {
     },
 
     addLargeClass(type, item) {
-      console.log(item, 999)
-      if(type === "add") {
-        this.moduelTitle = "添加大类"
-        this.moduelType = type
-        this.moduelName = null
+      console.log(item, 999);
+      if (type === "add") {
+        this.moduelTitle = "添加大类";
+        this.moduelType = type;
+        this.moduelName = null;
       } else {
-        this.moduelTitle = "编辑大类"
-        this.moduelId = `${item.Id}`
-        this.moduelType = type
-        this.moduelName = item.name
+        this.moduelTitle = "编辑大类";
+        this.moduelId = `${item.Id}`;
+        this.moduelType = type;
+        this.moduelName = item.name;
       }
       this.classVisible = true;
     }

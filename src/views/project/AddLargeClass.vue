@@ -1,5 +1,11 @@
 <template>
-  <el-form ref="form" :model="form" :rules="rules" class="detailed-list" label-width="130px">
+  <el-form
+    ref="form"
+    :model="form"
+    :rules="rules"
+    class="detailed-list"
+    label-width="130px"
+  >
     <el-form-item label="大类名称" prop="name">
       <el-input
         v-model="form.name"
@@ -20,11 +26,11 @@ export default {
   props: {
     id: {
       type: String,
-      default: ''
+      default: ""
     },
     type: {
       type: String,
-      default: ''
+      default: ""
     },
     moduelId: {
       type: String,
@@ -34,7 +40,6 @@ export default {
       type: String,
       default: null
     }
-    
   },
   data() {
     return {
@@ -52,10 +57,10 @@ export default {
   watch: {
     moduelName: {
       handler(val) {
-        if(!this.$util.isEmpty(val)) {
-          this.form.name = val
+        if (!this.$util.isEmpty(val)) {
+          this.form.name = val;
         } else {
-          this.form.name = ''
+          this.form.name = "";
         }
       },
       immediate: true,
@@ -64,27 +69,26 @@ export default {
   },
 
   methods: {
-    onSubmit(submit) {
+    onSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
           let data = {
             project_id: `${this.id}`,
             name: this.form.name
-          }
-          if(this.type === 'edit') {
+          };
+          if (this.type === "edit") {
             data = {
               ...data,
               moduel_id: this.moduelId
-            }
+            };
           }
           const path = {
-            api: 'api_moduel_index_add',
+            api: "api_moduel_index_add",
             data
           };
           this.socketApi.sendSock(JSON.stringify(path), res => {
             this.socketData(res);
           });
-
         } else {
           console.log("error submit!!");
           return false;
@@ -101,18 +105,17 @@ export default {
         } else {
           // 获取验证码
           if (resj.api === "api_moduel_index_add") {
-            if(resj.code === 0) {
-              this.$message.success("添加成功！")
+            if (resj.code === 0) {
+              this.$message.success("添加成功！");
             }
             console.log(resj);
           }
-          
         }
       }
     },
 
     close() {
-      this.$emit("closeDialog", 'success')
+      this.$emit("closeDialog", "success");
     }
   }
 };
