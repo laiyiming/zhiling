@@ -76,11 +76,11 @@
                 <img src="@/assets/icon/cmm.png" />
                 重命名
               </li>
-              <li>
+              <li @click="delQing(list)">
                 <img src="@/assets/icon/shangchu.png" />
-                删除大类
+                删除清单
               </li>
-              <li>
+              <li @click="addDetailedList('edit', list)">
                 <img src="@/assets/icon/xiugaidalei.png" />
                 修改大类
               </li>
@@ -94,7 +94,7 @@
     </div>
     <el-dialog
       :visible.sync="dialogVisible"
-      title="添加清单"
+      :title="qindtitle"
       custom-class="contentdialog"
       width="718px"
       center
@@ -102,8 +102,10 @@
       <AddDetailedList
         :moduel="moduelList"
         :id="id"
+        :class-name="className"
         :moduel-id="moduelId"
         :type="moduelType"
+        :list-id="listId"
         @closeDialog="closeDialog"
       />
     </el-dialog>
@@ -154,7 +156,12 @@ export default {
       moduelId: "",
       moduelType: "",
       moduelName: "",
-      delVisible: false
+      className: '',
+      qindtitle: '',
+      listId:'',
+      qingdanData: {},
+      delVisible: false,
+      delType: ''
     };
   },
 
@@ -191,6 +198,7 @@ export default {
     // 删除大类弹窗
     delModuel(id) {
       this.moduelId = id;
+      this.delType = 'dalei'
       this.delVisible = true;
     },
 
@@ -213,6 +221,11 @@ export default {
           }
           // 获取
           if (resj.api === "api_moduel_index_del") {
+            this.delVisible = false;
+            this.$message.success("删除成功！");
+            this.init();
+          }
+          if(resj.api === "api_moduel_lists_del") {
             this.delVisible = false;
             this.$message.success("删除成功！");
             this.init();
@@ -287,22 +300,46 @@ export default {
 
     // 删除大类
     delVisibleCom() {
-      const path = {
+      let path = {
         api: "api_moduel_index_del",
         data: {
           project_id: `${this.id}`,
           moduel_id: `${this.moduelId}`
         }
       };
+
+      if(this.delType === 'qingdan') {
+        path = {
+          api: "api_moduel_lists_del",
+          data: {
+            project_id: `${this.id}`,
+            moduel_id: this.qingdanData.moduel_id,
+            list_id: `${this.qingdanData.Id}`
+          }
+        }
+      }
+
       this.socketApi.sendSock(JSON.stringify(path), res => {
         this.socketData(res);
       });
     },
 
     // 添加清单弹窗
-    addDetailedList(type) {
+    addDetailedList(type, list) {
+      if(type === 'add') {
+        this.qindtitle = '添加清单'
+      }
+      if(type === 'edit') {
+        this.qindtitle = '编辑大类'
+      }
+      if(type === 'resetName') {
+        this.qindtitle = '重命名'
+      }
       this.dialogVisible = true;
       this.moduelType = type;
+      this.moduelId = list.moduel_id;
+      this.className = list.name;
+      this.listId = list.Id
     },
 
     // 添加编辑大类弹窗
@@ -318,6 +355,13 @@ export default {
         this.moduelName = item.name;
       }
       this.classVisible = true;
+    },
+
+    // 删除清单
+    delQing(list) {
+      this.delType = 'qingdan'
+      this.qingdanData = list;
+      this.delVisible = true;
     }
   }
 };

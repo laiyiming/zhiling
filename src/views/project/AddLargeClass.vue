@@ -108,21 +108,21 @@ export default {
           if (resj.api === "api_moduel_index_add") {
             if (resj.code === 0) {
               this.$message.success("添加成功！");
-              this.close();
+              this.close('success');
             }
           }
           if (resj.api === "api_moduel_index_rename") {
             if (resj.code === 0) {
               this.$message.success("修改成功！");
-              this.close();
+              this.close('success');
             }
           }
         }
       }
     },
 
-    close() {
-      this.$emit("closeDialog", "success");
+    close(type) {
+      this.$emit("closeDialog", type);
     }
   }
 };

@@ -9,12 +9,13 @@
     <el-form-item label="大类名称" prop="name">
       <el-input
         v-model="form.name"
+        :disabled="nameDisabled"
         style="width: 511px"
         placeholder="请输入项目名称"
       />
     </el-form-item>
     <el-form-item label="所属大类">
-      <el-select v-model="form.moduel_id" placeholder="请选择所属大类">
+      <el-select v-model="form.moduel_id" :disabled="classDisabled" placeholder="请选择所属大类">
         <el-option label="不分类" value=""></el-option>
         <el-option
           v-for="(list, key) in moduel"
@@ -50,6 +51,14 @@ export default {
     moduelId: {
       type: String,
       default: null
+    },
+    className: {
+      type: String,
+      default: null
+    },
+    listId: {
+      type: Number,
+      default: null
     }
   },
 
@@ -63,10 +72,35 @@ export default {
         name: [
           { required: true, message: "大类名称不可为空", trigger: "change" }
         ]
-      }
+      },
+      classDisabled: false,
+      nameDisabled: false
     };
   },
   
+  watch: {
+    type: {
+      handler(val) {
+        this.form.name = '';
+          this.form.moduel_id = null;
+        if(val === 'resetName' || val === 'edit') {
+          this.form.name = this.className;
+          this.form.moduel_id = +this.moduelId;
+        }
+
+        if(val === 'resetName' ) {
+          this.classDisabled = true;
+        }
+
+        if(val === 'edit' ) {
+          this.nameDisabled = true;
+        }
+      },
+      immediate: true,
+      deep: true,
+    }
+  },
+
   methods: {
     onSubmit() {
       this.$refs.form.validate(valid => {
@@ -78,12 +112,21 @@ export default {
           };
           let api = "api_moduel_lists_add";
           if (this.type === "edit") {
-            api = "api_moduel_index_rename";
+            api = "api_moduel_lists_changeM";
             data = {
-              ...data,
-              moduel_id: this.form.moduel_id
+              project_id: `${this.id}`,
+              moduel_id: `${this.form.moduel_id}`,
+              list_id: `${this.listId}`
             };
           }
+          if(this.type === 'resetName') {
+            api = "api_moduel_lists_rename";
+            data = {
+              ...data,
+              list_id: `${this.listId}`
+            };
+          }
+
           const path = {
             api,
             data
@@ -110,21 +153,21 @@ export default {
           if (resj.api === "api_moduel_lists_add") {
             if (resj.code === 0) {
               this.$message.success("添加成功！");
-              this.close();
+              this.close('success');
             }
           }
-          // if (resj.api === "api_moduel_index_rename") {
-          //   if (resj.code === 0) {
-          //     this.$message.success("修改成功！");
-          //     this.close();
-          //   }
-          // }
+          if (resj.api === "api_moduel_lists_rename" || resj.api === "api_moduel_lists_changeM") {
+            if (resj.code === 0) {
+              this.$message.success("修改成功！");
+              this.close('success');
+            }
+          }
         }
       }
     },
 
-    close() {
-      this.$emit("closeDialog", "success");
+    close(type) {
+      this.$emit("closeDialog", type);
     }
   }
 };
