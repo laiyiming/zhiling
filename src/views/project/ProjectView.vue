@@ -93,10 +93,14 @@
           <span>交付</span>
         </div>
       </div>
-      <ul class="project-view__ul">
-        <li>
-          <p>03-12</p>
-          <div class="project-view__ul-div">
+      <ul v-if="!$util.isEmpty(taskLog)" class="project-view__ul">
+        <li v-for="item in taskLog" :key="item.duitime">
+          <p>{{ getTime(item.duitime, "MM-dd") }}</p>
+          <div
+            v-for="items in item.list"
+            :key="items.Id"
+            class="project-view__ul-div"
+          >
             <p class="project-view__ul-div__xiang">
               <span />
             </p>
@@ -105,56 +109,12 @@
               <div class="project-view__ul-div-right-content">
                 <img src="@/assets/images/man.png" />
                 <div class="project-view__man-content">
-                  <p>高睿(总结）</p>
-                  <div>
-                    <p>
-                      今日：与研发人员讨论圈主相关的业务，并了解取数所需的字段来源
-                      2.完成大区交易额模板的展现界面开发
-                      3.完成大区交易额模板的取数逻辑开发
-                    </p>
-                    <p>
-                      今日：1.与研发人员对接省级交易额模板取数需要的关联表及字段
-                    </p>
-                    <p>
-                      问题：不理解圈主和商家之间的详细关系导致了取数上的困惑
-                    </p>
-                  </div>
+                  <p>{{ "--" }}(总结）</p>
+                  <div v-html="items.info" />
                 </div>
                 <div class="project-view__ul-div-right-abo">
                   <i class="el-icon-time" />
-                  2020/03/12
-                  <span>删除</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="project-view__ul-div">
-            <p class="project-view__ul-div__xiang">
-              <span />
-            </p>
-            <div class="project-view__ul-div-right">
-              <p></p>
-              <div class="project-view__ul-div-right-content">
-                <img src="@/assets/images/man.png" />
-                <div class="project-view__man-content">
-                  <p>高睿(总结）</p>
-                  <div>
-                    <p>
-                      今日：与研发人员讨论圈主相关的业务，并了解取数所需的字段来源
-                      2.完成大区交易额模板的展现界面开发
-                      3.完成大区交易额模板的取数逻辑开发
-                    </p>
-                    <p>
-                      今日：1.与研发人员对接省级交易额模板取数需要的关联表及字段
-                    </p>
-                    <p>
-                      问题：不理解圈主和商家之间的详细关系导致了取数上的困惑
-                    </p>
-                  </div>
-                </div>
-                <div class="project-view__ul-div-right-abo">
-                  <i class="el-icon-time" />
-                  2020/03/12
+                  {{ getTime(items.time, "yyyy-MM-dd") }}
                   <span>删除</span>
                 </div>
               </div>
@@ -172,10 +132,10 @@
       </span>
     </el-dialog>
     <!-- 日志 -->
-    <el-dialog title="" :visible.sync="rzVisible" width="30%" center>
+    <el-dialog title="" :visible.sync="rzVisible" width="50%" center>
       <Journal
-        :project_id="$route.query.project_id"
-        :task_id="$route.query.task_id"
+        :project-id="`${$route.query.project_id}`"
+        :task-id="`${$route.query.task_id}`"
         @closeDialog="closeDialog"
       />
     </el-dialog>
@@ -183,6 +143,7 @@
 </template>
 
 <script>
+import { format } from "date-fns";
 import Journal from "./Journal";
 export default {
   name: "ProjectMember",
@@ -195,7 +156,8 @@ export default {
       initLoading: false,
       dialogVisible: false,
       rzi_active: 1,
-      taskInfo: null
+      taskInfo: null,
+      taskLog: []
     };
   },
 
@@ -233,8 +195,11 @@ export default {
     },
 
     // 关闭弹窗
-    closeDialog() {
+    closeDialog(type) {
       this.rzVisible = false;
+      if (type === "success") {
+        this.init();
+      }
     },
     rzDialog() {
       this.rzVisible = true;
@@ -274,6 +239,11 @@ export default {
       });
     },
 
+    getTime(time, type) {
+      console.log(time, type);
+      return format(new Date(time), type);
+    },
+
     // socket请求统一处理
     socketData(res) {
       if (res !== '{"type":"ping"}') {
@@ -284,7 +254,28 @@ export default {
           // 获取大类列表
           if (resj.api === "api_task_index_info") {
             console.log(resj);
-            this.taskInfo = resj.data.task;
+            this.taskInfo = resj.data.task || [];
+            if (!this.$util.isEmpty(resj.data.task_log)) {
+              // this.taskLog = resj.data.task_log.map(i => ({
+              //   timeItem: this.getTime(i.time, 'yyyy-MM-dd'),
+              //   daTime: this.getTime(i.time, 'MM-dd'),
+              //   list: resj.data.task_log.filter(i => i.)
+              // }))
+              this.taskLog = [];
+              const list = [];
+              resj.data.task_log.forEach(i => {
+                console.log(i);
+                const duitime = this.getTime(i.time, "yyyy-MM-dd");
+                const pushData = resj.data.task_log.filter(
+                  i => this.getTime(i.time, "yyyy-MM-dd") === duitime
+                );
+                list.push({
+                  duitime,
+                  list: [...pushData]
+                });
+              });
+              this.taskLog = this.unique(list, "duitime");
+            }
           }
           // 删除任务
           if (resj.api === "api_task_index_del") {
@@ -300,6 +291,12 @@ export default {
       }
       this.initLoading = false;
     },
+    // 根据对象去重
+    unique(arr1, type) {
+      const res = new Map();
+      return arr1.filter(a => !res.has(a[type]) && res.set(a[type], 1));
+    },
+
     rziActive(type) {
       this.rzi_active = type;
     },
