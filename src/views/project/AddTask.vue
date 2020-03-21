@@ -1,5 +1,5 @@
 <template>
-  <div class="project-task">
+  <div v-loading="initLoading" class="project-task">
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
@@ -82,6 +82,7 @@ export default {
   name: "ProjectMember",
   data() {
     return {
+      initLoading: false,
       form: {
         name: "",
         begin_time: null,
@@ -104,11 +105,13 @@ export default {
         info: [
           { required: true, message: "项目简介不可为空", trigger: "change" }
         ]
-      }
+      },
+      taskId: ""
     };
   },
 
   created() {
+    this.taskId = this.$route.query.task_id;
     this.init();
   },
 
@@ -137,18 +140,58 @@ export default {
           if (resj.api === "api_project_index_projectMember") {
             console.log(resj);
             this.options = resj.data.members || [];
+            this.$nextTick(() => {
+              if (!this.$util.isEmpty(this.taskId)) {
+                this.getInfo();
+              }
+            });
           }
           // 添加任务
-          if (resj.api === "api_task_index_add") {
+          if (
+            resj.api === "api_task_index_add" ||
+            resj.api === "api_task_index_edit"
+          ) {
             console.log(resj);
             if (resj.code === 0) {
-              this.$message.success("添加成功！");
+              let message = "添加成功！";
+              if (resj.api === "api_task_index_edit") {
+                message = "编辑成功！";
+              }
+              this.$message.success(message);
               this.$router.go(-1);
+            }
+          }
+
+          // 添加任务
+          if (resj.api === "api_task_index_info") {
+            console.log(resj, 978);
+            if (resj.code === 0) {
+              this.form = {
+                ...resj.data.task,
+                time: [
+                  new Date(resj.data.task.begin_time),
+                  new Date(resj.data.task.end_time)
+                ]
+              };
             }
           }
         }
       }
       this.initLoading = false;
+    },
+
+    getInfo() {
+      const path = {
+        api: "api_task_index_info",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id
+        }
+      };
+      this.initLoading = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
     },
 
     backRouter() {
@@ -157,8 +200,13 @@ export default {
     onSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
+          let api = "api_task_index_add";
+          if (!this.$util.isEmpty(this.taskId)) {
+            api = "api_task_index_edit";
+          }
+
           const path = {
-            api: "api_task_index_add",
+            api,
             data: {
               name: this.form.name,
               begin_time: this.form.begin_time,

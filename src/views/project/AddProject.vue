@@ -71,7 +71,6 @@ export default {
               ...this.form
             }
           };
-          console.log(path);
           this.socketApi.sendSock(JSON.stringify(path), res => {
             this.socketData(res);
           });

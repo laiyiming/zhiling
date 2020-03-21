@@ -15,7 +15,11 @@
       />
     </el-form-item>
     <el-form-item label="所属大类">
-      <el-select v-model="form.moduel_id" :disabled="classDisabled" placeholder="请选择所属大类">
+      <el-select
+        v-model="form.moduel_id"
+        :disabled="classDisabled"
+        placeholder="请选择所属大类"
+      >
         <el-option label="不分类" value=""></el-option>
         <el-option
           v-for="(list, key) in moduel"
@@ -77,27 +81,27 @@ export default {
       nameDisabled: false
     };
   },
-  
+
   watch: {
     type: {
       handler(val) {
-        this.form.name = '';
-          this.form.moduel_id = null;
-        if(val === 'resetName' || val === 'edit') {
+        this.form.name = "";
+        this.form.moduel_id = null;
+        if (val === "resetName" || val === "edit") {
           this.form.name = this.className;
           this.form.moduel_id = +this.moduelId;
         }
 
-        if(val === 'resetName' ) {
+        if (val === "resetName") {
           this.classDisabled = true;
         }
 
-        if(val === 'edit' ) {
+        if (val === "edit") {
           this.nameDisabled = true;
         }
       },
       immediate: true,
-      deep: true,
+      deep: true
     }
   },
 
@@ -119,7 +123,7 @@ export default {
               list_id: `${this.listId}`
             };
           }
-          if(this.type === 'resetName') {
+          if (this.type === "resetName") {
             api = "api_moduel_lists_rename";
             data = {
               ...data,
@@ -131,7 +135,6 @@ export default {
             api,
             data
           };
-          console.log(path, 998)
           this.socketApi.sendSock(JSON.stringify(path), res => {
             this.socketData(res);
           });
@@ -153,13 +156,16 @@ export default {
           if (resj.api === "api_moduel_lists_add") {
             if (resj.code === 0) {
               this.$message.success("添加成功！");
-              this.close('success');
+              this.close("success");
             }
           }
-          if (resj.api === "api_moduel_lists_rename" || resj.api === "api_moduel_lists_changeM") {
+          if (
+            resj.api === "api_moduel_lists_rename" ||
+            resj.api === "api_moduel_lists_changeM"
+          ) {
             if (resj.code === 0) {
               this.$message.success("修改成功！");
-              this.close('success');
+              this.close("success");
             }
           }
         }

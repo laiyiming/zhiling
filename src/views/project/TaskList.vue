@@ -1,5 +1,5 @@
 <template>
-  <div class="project-task">
+  <div v-loading="initLoading" class="project-task">
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
@@ -20,34 +20,35 @@
     </div>
     <div class="project-member__content">
       <el-table
-        v-if="!$util.isEmpty(tableData)"
         ref="multipleTable"
         :data="tableData"
         :class="$util.isEmpty(tableData) ? 'project-member__table-kon' : ''"
         tooltip-effect="dark"
         style="width: 100%"
         stripe
-        @selection-change="handleSelectionChange"
       >
         <el-table-column label="序号" width="120">
-          <template slot-scope="scope">{{ scope.row.date }}</template>
+          <template slot-scope="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
-        <el-table-column prop="name" label="任务名称" width="120" />
-        <el-table-column
-          prop="address"
-          label="任务状态"
-          show-overflow-tooltip
-        />
+        <el-table-column prop="name" label="任务名称" />
+        <el-table-column prop="status" label="任务状态">
+          <template slot-scope="scope">
+            {{ getStatus(scope.row.status) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="begin_time" label="开始时间" />
+        <el-table-column prop="end_time" label="结束时间" />
+        <el-table-column prop="host" label="主办人" />
         <el-table-column label="操作" width="120">
           <template slot-scope="scope">
-            {{ scope }}
-            <!-- {{ scope.row.date }} -->
-            <span>查看</span>
-            <span>下载</span>
+            <div class="task-list__table">
+              <span @click="lookTo(scope.row)">查看</span>
+              <span>下载</span>
+            </div>
           </template>
         </el-table-column>
       </el-table>
-      <div v-else class="project-table__wu">
+      <div v-if="$util.isEmpty(tableData)" class="project-table__wu">
         <img src="@/assets/images/kzt.png" alt="" />
         <p>什么都没有...</p>
       </div>
@@ -70,6 +71,7 @@ export default {
   name: "ProjectMember",
   data() {
     return {
+      initLoading: false,
       currentPage: 2,
       tableData: []
     };
@@ -95,6 +97,37 @@ export default {
       });
     },
 
+    getStatus(status) {
+      switch (status) {
+        case "0":
+          return "待定";
+          // eslint-disable-next-line no-unreachable
+          break;
+        case "1":
+          return "开始";
+          // eslint-disable-next-line no-unreachable
+          break;
+        case "2":
+          return "完成";
+          // eslint-disable-next-line no-unreachable
+          break;
+        case "3":
+          return "归档";
+        default:
+      }
+    },
+
+    // 查看详情
+    lookTo(item) {
+      this.$router.push({
+        path: "project-view",
+        query: {
+          project_id: this.$route.query.project_id,
+          task_id: item.Id
+        }
+      });
+    },
+
     // socket请求统一处理
     socketData(res) {
       if (res !== '{"type":"ping"}') {
@@ -104,8 +137,7 @@ export default {
         } else {
           // 获取大类列表
           if (resj.api === "api_moduel_lists_taskList") {
-            console.log(resj);
-            this.tableData = resj.data || [];
+            this.tableData = resj.data.tasks || [];
           }
         }
       }
@@ -133,9 +165,7 @@ export default {
           name: this.$route.query.name
         }
       });
-    },
-
-    handleSelectionChange() {}
+    }
   }
 };
 </script>
@@ -206,6 +236,14 @@ export default {
   & .project-member__table-kon {
     & .el-table__body-wrapper {
       display: none;
+    }
+  }
+
+  & .task-list__table {
+    > span {
+      cursor: pointer;
+      color: #2c6dd2;
+      margin: 0 5px;
     }
   }
 }

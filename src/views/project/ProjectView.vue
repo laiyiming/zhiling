@@ -1,5 +1,5 @@
 <template>
-  <div class="project-view">
+  <div v-loading="initLoading" class="project-view">
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
@@ -20,52 +20,51 @@
           @click="dialogVisible = true"
           >删除任务
         </el-button>
-        <el-button class="project-index__button-add">编辑任务</el-button>
-        <el-button class="project-index__button-red">归档任务</el-button>
+        <el-button class="project-index__button-add" @click="bianji"
+          >编辑任务</el-button
+        >
+        <el-button class="project-index__button-red" @click="guidan"
+          >归档任务</el-button
+        >
       </div>
     </div>
-    <div class="project-view__item">
+    <div v-if="!$util.isEmpty(taskInfo)" class="project-view__item">
       <div class="project-view__item-title">
         <i class="el-icon-tickets" style="width: 18px height:19px" />
-        任务名称任务名称
+        {{ taskInfo.name }}
         <span class="green-boll" />
-        <span>开始</span>
+        <span>{{ getStatus(taskInfo.status) }}</span>
       </div>
       <div class="project-view__item-content1">
         <div>
           <p>任务来源:</p>
-          项目名称/任务名称
+          {{ taskInfo.name }}
         </div>
         <div>
           <p>起止时间:</p>
-          2020/03/13至2020/03/20
+          {{ taskInfo.begin_time }}至{{ taskInfo.end_time }}
         </div>
       </div>
       <div class="project-view__item-content1">
         <div>
           <p>主办人:</p>
-          高睿睿
+          {{ taskInfo.host || "--" }}
         </div>
       </div>
       <div class="project-view__item-content1">
         <div>
           <p>协办人:</p>
-          王一源，陈小霞，刘敏，赵丽颖
+          {{ "--" }}
           <span>添加 <i /> 删除</span>
         </div>
       </div>
     </div>
-    <div class="project-view__item">
+    <div v-if="!$util.isEmpty(taskInfo)" class="project-view__item">
       <div class="project-view__item-title">
         <i class="el-icon-reading" style="width: 23px height:18px" />
         任务说明
       </div>
-      <div class="project-view__item-desc">
-        1.任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说
-        2.任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明
-        3.任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明
-        4.任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明任务说明
-      </div>
+      <div v-html="taskInfo.info" class="project-view__item-desc" />
     </div>
     <div class="project-view__item2">
       <div class="project-view__nav">
@@ -90,7 +89,7 @@
           >
         </div>
         <div class="project-view__right">
-          <span>写日志</span>
+          <span @click="rzDialog">写日志</span>
           <span>交付</span>
         </div>
       </div>
@@ -164,40 +163,159 @@
         </li>
       </ul>
     </div>
-    <el-dialog
-      title=""
-      :before-close="handleClose"
-      :visible.sync="dialogVisible"
-      width="30%"
-      center
-    >
+    <el-dialog title="" :visible.sync="dialogVisible" width="30%" center>
       <p>确定删除任务：任务名称任务名称？</p>
       <p>删除后，日志与文件均会消失，请及时备份</p>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="delRenwu">确 定</el-button>
       </span>
+    </el-dialog>
+    <!-- 日志 -->
+    <el-dialog title="" :visible.sync="rzVisible" width="30%" center>
+      <Journal
+        :project_id="$route.query.project_id"
+        :task_id="$route.query.task_id"
+        @closeDialog="closeDialog"
+      />
     </el-dialog>
   </div>
 </template>
 
 <script>
+import Journal from "./Journal";
 export default {
   name: "ProjectMember",
+  components: {
+    Journal
+  },
   data() {
     return {
+      rzVisible: false,
+      initLoading: false,
       dialogVisible: false,
-      rzi_active: 1
+      rzi_active: 1,
+      taskInfo: null
     };
   },
+
+  created() {
+    this.init();
+  },
   methods: {
+    // 删除任务
+    delRenwu() {
+      const path = {
+        api: "api_task_index_del",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id
+        }
+      };
+      this.initLoading = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+    // 归档
+    guidan() {
+      const path = {
+        api: "api_task_index_setfile",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id
+        }
+      };
+      this.initLoading = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    // 关闭弹窗
+    closeDialog() {
+      this.rzVisible = false;
+    },
+    rzDialog() {
+      this.rzVisible = true;
+    },
+    // 获取状态对应值
+    getStatus(status) {
+      switch (status) {
+        case "0":
+          return "待定";
+          // eslint-disable-next-line no-unreachable
+          break;
+        case "1":
+          return "开始";
+          // eslint-disable-next-line no-unreachable
+          break;
+        case "2":
+          return "完成";
+          // eslint-disable-next-line no-unreachable
+          break;
+        case "3":
+          return "归档";
+        default:
+      }
+    },
+    // 获取详情数据
+    init() {
+      const path = {
+        api: "api_task_index_info",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id
+        }
+      };
+      this.initLoading = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    // socket请求统一处理
+    socketData(res) {
+      if (res !== '{"type":"ping"}') {
+        const resj = JSON.parse(res);
+        if (resj.code === -1) {
+          this.$message.error(resj.message);
+        } else {
+          // 获取大类列表
+          if (resj.api === "api_task_index_info") {
+            console.log(resj);
+            this.taskInfo = resj.data.task;
+          }
+          // 删除任务
+          if (resj.api === "api_task_index_del") {
+            this.$message.success("任务删除成功！");
+            this.$router.go(-1);
+          }
+          // 归档
+          if (resj.api === "api_task_index_setfile") {
+            this.$message.success("归档成功！");
+            this.$router.go(-1);
+          }
+        }
+      }
+      this.initLoading = false;
+    },
     rziActive(type) {
       this.rzi_active = type;
     },
     backRouter() {
       this.$router.go(-1);
+    },
+
+    bianji() {
+      this.$router.push({
+        path: "add-task",
+        query: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id,
+          name: this.taskInfo.name
+        }
+      });
     }
   }
 };
