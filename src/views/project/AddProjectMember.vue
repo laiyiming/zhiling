@@ -1,26 +1,19 @@
 <template>
-  <div class="project-task">
+  <div v-loading="initLoading" class="project-member">
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
-        <el-breadcrumb-item
-          ><span @click="backRouter">{{ $route.query.name }}</span>
-        </el-breadcrumb-item>
-        <el-breadcrumb-item
-          ><a href="/">
-            任务列表
-          </a>
-        </el-breadcrumb-item>
+        <el-breadcrumb-item>项目成员 </el-breadcrumb-item>
+        <el-breadcrumb-item>添加项目成员 </el-breadcrumb-item>
       </el-breadcrumb>
       <div class="project-index__header-button">
-        <el-button class="project-index__button-add" @click="addTask"
-          >+添加任务
-        </el-button>
+        <el-button class="project-index__button-add" @click="addMwmber"
+          >添加项目成员</el-button
+        >
       </div>
     </div>
     <div class="project-member__content">
       <el-table
-        v-if="!$util.isEmpty(tableData)"
         ref="multipleTable"
         :data="tableData"
         :class="$util.isEmpty(tableData) ? 'project-member__table-kon' : ''"
@@ -29,31 +22,16 @@
         stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column label="序号" width="120">
-          <template slot-scope="scope">{{ scope.row.date }}</template>
-        </el-table-column>
+        <el-table-column type="selection" width="55" />
         <el-table-column prop="name" label="任务名称" width="120" />
-        <el-table-column
-          prop="address"
-          label="任务状态"
-          show-overflow-tooltip
-        />
-        <el-table-column label="操作" width="120">
-          <template slot-scope="scope">
-            {{ scope }}
-            <!-- {{ scope.row.date }} -->
-            <span>查看</span>
-            <span>下载</span>
-          </template>
-        </el-table-column>
+        <el-table-column prop="phone" label="手机号码" show-overflow-tooltip />
       </el-table>
-      <div v-else class="project-table__wu">
+      <div class="project-table__wu">
         <img src="@/assets/images/kzt.png" alt="" />
         <p>什么都没有...</p>
       </div>
 
       <el-pagination
-        @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page.sync="currentPage"
         :page-size="100"
@@ -67,29 +45,37 @@
 
 <script>
 export default {
-  name: "ProjectMember",
+  name: "AddProjectMember",
   data() {
     return {
-      currentPage: 2,
-      tableData: []
+      initLoading: false,
+      currentPage: 3,
+      tableData: [
+        {
+          date: "2016-05-03",
+          name: "序号",
+          address: "上海市普陀区金沙江路 1518 弄"
+        }
+      ],
+      listTable: [],
+      type: null
     };
   },
 
   created() {
     this.init();
+    this.type = this.$route.query.type;
   },
 
   methods: {
     // 获取任务列表
     init() {
       const path = {
-        api: "api_moduel_lists_taskList",
+        api: "api_project_index_unprojectMember",
         data: {
-          project_id: this.$route.query.project_id,
-          list_id: this.$route.query.list_id
+          project_id: this.$route.query.project_id
         }
       };
-      this.initLoading = true;
       this.socketApi.sendSock(JSON.stringify(path), res => {
         this.socketData(res);
       });
@@ -103,45 +89,65 @@ export default {
           this.$message.error(resj.message);
         } else {
           // 获取大类列表
-          if (resj.api === "api_moduel_lists_taskList") {
-            console.log(resj);
-            this.tableData = resj.data || [];
+          if (resj.api === "api_project_index_unprojectMember") {
+            this.tableData = resj.data.members || [];
+          }
+          // 获取大类列表
+          if (resj.api === "api_project_index_addMemberMany") {
+            if (this.code === 0) {
+              this.$message.success("添加成功！");
+              this.init();
+            }
+          }
+          // 获取大类列表
+          if (resj.api === "api_project_index_addManageMany") {
+            if (this.code === 0) {
+              this.$message.success("添加成功！");
+              this.init();
+            }
           }
         }
       }
       this.initLoading = false;
     },
 
-    handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+    // 添加项目成员
+    addMwmber() {
+      if (this.$util.isEmpty(this.listTable)) {
+        this.$message.error("请先选择项目人员");
+        return false;
+      }
+      const member_ids = this.listTable.map(i => i.Id);
+      let api = "api_project_index_addMemberMany";
+      if (this.type === "jingli") {
+        api = "api_project_index_addManageMany";
+      }
+      const path = {
+        api,
+        data: {
+          project_id: this.$route.query.project_id,
+          member_ids: member_ids
+        }
+      };
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    handleSelectionChange(val) {
+      this.listTable = val;
+      console.log(val);
     },
 
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
-    },
-
-    backRouter() {
-      this.$router.go(-1);
-    },
-
-    addTask() {
-      this.$router.push({
-        path: "add-task",
-        query: {
-          project_id: this.$route.query.project_id,
-          list_id: this.$route.query.list_id,
-          name: this.$route.query.name
-        }
-      });
-    },
-
-    handleSelectionChange() {}
+    }
   }
 };
 </script>
 
 <style lang="less">
-.project-task {
+.project-member {
   & .project-index__header {
     display: flex;
     height: 60px;

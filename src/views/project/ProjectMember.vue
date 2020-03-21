@@ -1,5 +1,5 @@
 <template>
-  <div class="project-member">
+  <div v-loading="initLoading" class="project-member">
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
@@ -10,14 +10,14 @@
         >
       </el-breadcrumb>
       <div class="project-index__header-button">
-        <el-button class="project-index__button-add" @click="addDetailedList"
+        <el-button class="project-index__button-add" @click="addman('jingli')"
           >+新增项目经理</el-button
         >
-        <el-button class="project-index__button-del" @click="addLargeClass"
-          >+添加大类</el-button
+        <el-button
+          class="project-index__button-add"
+          @click="addman('chengyuan')"
+          >+新增成员</el-button
         >
-
-        <el-button class="project-index__button-add">+添加成员</el-button>
       </div>
     </div>
     <div class="project-member__content">
@@ -28,11 +28,9 @@
         tooltip-effect="dark"
         style="width: 100%"
         stripe
-        @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
         <el-table-column label="序号" width="120">
-          <template slot-scope="scope">{{ scope.row.date }}</template>
+          <template slot-scope="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
         <el-table-column prop="name" label="姓名" width="120" />
         <el-table-column
@@ -47,9 +45,8 @@
       </div>
 
       <el-pagination
-        @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page.sync="currentPage3"
+        :current-page.sync="currentPage"
         :page-size="100"
         layout="prev, pager, next, jumper"
         :total="1000"
@@ -64,49 +61,62 @@ export default {
   name: "ProjectMember",
   data() {
     return {
-      tableData: [
-        // {
-        //   date: "2016-05-03",
-        //   name: "序号",
-        //   address: "上海市普陀区金沙江路 1518 弄"
-        // },
-        // {
-        //   date: "2016-05-02",
-        //   name: "王小虎",
-        //   address: "上海市普陀区金沙江路 1518 弄"
-        // },
-        // {
-        //   date: "2016-05-04",
-        //   name: "王小虎",
-        //   address: "上海市普陀区金沙江路 1518 弄"
-        // },
-        // {
-        //   date: "2016-05-01",
-        //   name: "王小虎",
-        //   address: "上海市普陀区金沙江路 1518 弄"
-        // },
-        // {
-        //   date: "2016-05-08",
-        //   name: "王小虎",
-        //   address: "上海市普陀区金沙江路 1518 弄"
-        // },
-        // {
-        //   date: "2016-05-06",
-        //   name: "王小虎",
-        //   address: "上海市普陀区金沙江路 1518 弄"
-        // },
-        // {
-        //   date: "2016-05-07",
-        //   name: "王小虎",
-        //   address: "上海市普陀区金沙江路 1518 弄"
-        // }
-      ]
+      initLoading: false,
+      currentPage: 3,
+      tableData: []
     };
   },
+
+  created() {
+    this.init();
+  },
   methods: {
-    handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+    // 获取任务列表
+    init() {
+      const path = {
+        api: "api_project_index_projectMember",
+        data: {
+          project_id: this.$route.query.project_id
+        }
+      };
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
     },
+
+    getXuhao(row) {
+      console.log(row);
+    },
+
+    // socket请求统一处理
+    socketData(res) {
+      if (res !== '{"type":"ping"}') {
+        const resj = JSON.parse(res);
+        if (resj.code === -1) {
+          this.$message.error(resj.message);
+        } else {
+          // 获取大类列表
+          if (resj.api === "api_project_index_projectMember") {
+            console.log(resj);
+            this.tableData = resj.data.members || [];
+          }
+        }
+      }
+      this.initLoading = false;
+    },
+
+    addman(type) {
+      this.$router.push({
+        path: "add-member",
+        query: {
+          project_id: this.$route.query.project_id,
+          type
+        }
+      });
+    },
+
+    handleSelectionChange() {},
+
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
     }

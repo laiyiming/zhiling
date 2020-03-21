@@ -212,7 +212,6 @@ export default {
     },
 
     delDialog(id) {
-      console.log(id);
       this.delId = id;
       this.delVisible = true;
     },

@@ -19,7 +19,9 @@
           @click="addDetailedList('add')"
           >+添加清单</el-button
         >
-        <el-button class="project-index__button-add">+添加成员</el-button>
+        <el-button class="project-index__button-add" @click="addMan"
+          >+添加成员</el-button
+        >
       </div>
     </div>
     <div class="project-content__content">
@@ -52,13 +54,13 @@
           </el-popover>
         </p>
 
-        <div 
+        <div
           v-for="list in item.childrenList"
           :key="`qingd${list.Id}`"
-          class="project-content__list-item">
-          <p 
-            :class="getStatusName(+list.status)"
-          >
+          class="project-content__list-item"
+          @click="renwuTo(list)"
+        >
+          <p :class="getStatusName(+list.status)">
             {{ getStatus(+list.status) }}
           </p>
           <div class="project-content__list-item-div">
@@ -68,19 +70,19 @@
           <el-popover
             placement="bottom"
             width="113"
-            trigger="click"
+            trigger="hover"
             popper-class="project-content__popover-lei"
           >
             <ul class="project-content__list-popover-lei">
-              <li @click="addDetailedList('resetName', list)">
+              <li @click.stop="addDetailedList('resetName', list)">
                 <img src="@/assets/icon/cmm.png" />
                 重命名
               </li>
-              <li @click="delQing(list)">
+              <li @click.stop="delQing(list)">
                 <img src="@/assets/icon/shangchu.png" />
                 删除清单
               </li>
-              <li @click="addDetailedList('edit', list)">
+              <li @click.stop="addDetailedList('edit', list)">
                 <img src="@/assets/icon/xiugaidalei.png" />
                 修改大类
               </li>
@@ -156,12 +158,12 @@ export default {
       moduelId: "",
       moduelType: "",
       moduelName: "",
-      className: '',
-      qindtitle: '',
-      listId:'',
+      className: "",
+      qindtitle: "",
+      listId: "",
       qingdanData: {},
       delVisible: false,
-      delType: ''
+      delType: ""
     };
   },
 
@@ -189,7 +191,7 @@ export default {
     closeDialog(type) {
       this.classVisible = false;
       this.dialogVisible = false;
-      this.moduelId = '';
+      this.moduelId = "";
       if (type === "success") {
         this.init();
       }
@@ -198,7 +200,7 @@ export default {
     // 删除大类弹窗
     delModuel(id) {
       this.moduelId = id;
-      this.delType = 'dalei'
+      this.delType = "dalei";
       this.delVisible = true;
     },
 
@@ -216,8 +218,8 @@ export default {
             this.moduelList = this.moduelList.map(a => ({
               ...a,
               childrenList: this.getList(a.Id)
-            }))
-            console.log(this.moduelList, 852)
+            }));
+            console.log(this.moduelList, 852);
           }
           // 获取
           if (resj.api === "api_moduel_index_del") {
@@ -225,7 +227,7 @@ export default {
             this.$message.success("删除成功！");
             this.init();
           }
-          if(resj.api === "api_moduel_lists_del") {
+          if (resj.api === "api_moduel_lists_del") {
             this.delVisible = false;
             this.$message.success("删除成功！");
             this.init();
@@ -241,39 +243,34 @@ export default {
       const list1 = this.getListData(id, 1);
       const list2 = this.getListData(id, 2);
       const list3 = this.getListData(id, 3);
-      return [
-        ...list0,
-        ...list1,
-        ...list2,
-        ...list3
-      ]
+      return [...list0, ...list1, ...list2, ...list3];
     },
 
     getListData(id, type) {
-       const list = this.qinlist.filter(i => +i.moduel_id === id);
+      const list = this.qinlist.filter(i => +i.moduel_id === id);
       const listData = list.filter(i => +i.status === type);
-      if(!this.$util.isEmpty(listData)) {
-        return listData
+      if (!this.$util.isEmpty(listData)) {
+        return listData;
       }
-      return []
+      return [];
     },
 
     getStatus(type) {
       switch (type) {
         case 0:
-          return '待定';
+          return "待定";
           // eslint-disable-next-line no-unreachable
           break;
         case 1:
-          return '开始';
+          return "开始";
           // eslint-disable-next-line no-unreachable
           break;
         case 2:
-          return '完成';
+          return "完成";
           // eslint-disable-next-line no-unreachable
           break;
         case 3:
-          return '归档';
+          return "归档";
         default:
       }
     },
@@ -281,19 +278,19 @@ export default {
     getStatusName(type) {
       switch (type) {
         case 0:
-          return 'project-content__status1';
+          return "project-content__status1";
           // eslint-disable-next-line no-unreachable
           break;
         case 1:
-          return 'project-content__status2';
+          return "project-content__status2";
           // eslint-disable-next-line no-unreachable
           break;
         case 2:
-          return 'project-content__status3';
+          return "project-content__status3";
           // eslint-disable-next-line no-unreachable
           break;
         case 3:
-          return 'project-content__status4';
+          return "project-content__status4";
         default:
       }
     },
@@ -308,7 +305,7 @@ export default {
         }
       };
 
-      if(this.delType === 'qingdan') {
+      if (this.delType === "qingdan") {
         path = {
           api: "api_moduel_lists_del",
           data: {
@@ -316,7 +313,7 @@ export default {
             moduel_id: this.qingdanData.moduel_id,
             list_id: `${this.qingdanData.Id}`
           }
-        }
+        };
       }
 
       this.socketApi.sendSock(JSON.stringify(path), res => {
@@ -326,20 +323,20 @@ export default {
 
     // 添加清单弹窗
     addDetailedList(type, list) {
-      if(type === 'add') {
-        this.qindtitle = '添加清单'
+      if (type === "add") {
+        this.qindtitle = "添加清单";
       }
-      if(type === 'edit') {
-        this.qindtitle = '编辑大类'
+      if (type === "edit") {
+        this.qindtitle = "编辑大类";
       }
-      if(type === 'resetName') {
-        this.qindtitle = '重命名'
+      if (type === "resetName") {
+        this.qindtitle = "重命名";
       }
       this.dialogVisible = true;
       this.moduelType = type;
       this.moduelId = list.moduel_id;
       this.className = list.name;
-      this.listId = list.Id
+      this.listId = list.Id;
     },
 
     // 添加编辑大类弹窗
@@ -359,9 +356,29 @@ export default {
 
     // 删除清单
     delQing(list) {
-      this.delType = 'qingdan'
+      this.delType = "qingdan";
       this.qingdanData = list;
       this.delVisible = true;
+    },
+
+    addMan() {
+      this.$router.push({
+        path: "member",
+        query: {
+          project_id: this.id
+        }
+      });
+    },
+
+    renwuTo(list) {
+      this.$router.push({
+        path: "task",
+        query: {
+          list_id: list.Id,
+          project_id: this.id,
+          name: list.name
+        }
+      });
     }
   }
 };
@@ -407,7 +424,7 @@ export default {
   & .project-content__content {
     margin: 24px 0 0 24px;
     background: #ffffff;
-    padding: 24px 0 0 24px;
+    padding: 24px 0 100px 24px;
     display: flex;
     align-items: flex-start;
   }

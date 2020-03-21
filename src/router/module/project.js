@@ -43,6 +43,17 @@ export default [
           )
       },
       {
+        path: "add-member",
+        name: "project-add-member",
+        meta: {
+          title: "添加项目成员"
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "project-add-member" */ "@/views/project/AddProjectMember.vue"
+          )
+      },
+      {
         path: "task",
         name: "project-task",
         meta: {

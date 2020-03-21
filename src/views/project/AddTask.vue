@@ -3,14 +3,12 @@
     <div class="project-index__header">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">项目</el-breadcrumb-item>
-        <el-breadcrumb-item
-          ><a href="/">
-            福福餐饮
-          </a>
+        <el-breadcrumb-item>
+          <span @click="backRouter">{{ $route.query.name }}</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item
           ><a href="/">
-            任务列表
+            新增任务
           </a>
         </el-breadcrumb-item>
       </el-breadcrumb>
@@ -28,9 +26,9 @@
         class="project-task__form"
         label-width="99px"
       >
-        <el-form-item label="项目标题" prop="title">
+        <el-form-item label="项目标题" prop="name">
           <el-input
-            v-model="form.title"
+            v-model="form.name"
             style="width: 511px"
             placeholder="请输入项目名称"
           />
@@ -43,26 +41,27 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             style="width: 511px"
+            @change="changeTime"
           />
         </el-form-item>
-        <el-form-item label="主办人" prop="man">
+        <el-form-item label="主办人" prop="host_id">
           <el-select
-            v-model="form.man"
+            v-model="form.host_id"
             placeholder="请选择"
             style="width: 511px"
           >
             <el-option
               v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              :key="item.Id"
+              :label="item.name"
+              :value="item.Id"
             >
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="项目说明" prop="desc">
+        <el-form-item label="项目说明" prop="info">
           <el-input
-            v-model="form.desc"
+            v-model="form.info"
             type="textarea"
             style="width: 511px"
             placeholder="请输入项目说明"
@@ -78,65 +77,110 @@
 </template>
 
 <script>
+import { format } from "date-fns";
 export default {
   name: "ProjectMember",
   data() {
     return {
       form: {
-        title: "",
-        time: "",
-        man: "",
-        desc: ""
+        name: "",
+        begin_time: null,
+        end_time: null,
+        host_id: "",
+        info: "",
+        time: ""
       },
-      options: [
-        {
-          value: "选项1",
-          label: "黄金糕"
-        },
-        {
-          value: "选项2",
-          label: "双皮奶"
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎"
-        },
-        {
-          value: "选项4",
-          label: "龙须面"
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭"
-        }
-      ],
+      options: [],
       rules: {
-        title: [
+        name: [
           { required: true, message: "项目标题不可为空", trigger: "change" }
         ],
         time: [
           { required: true, message: "起止时间项目不可为空", trigger: "change" }
         ],
-        man: [{ required: true, message: "主办人不可为空", trigger: "change" }],
-        desc: [
+        host_id: [
+          { required: true, message: "主办人不可为空", trigger: "change" }
+        ],
+        info: [
           { required: true, message: "项目简介不可为空", trigger: "change" }
         ]
       }
     };
   },
+
+  created() {
+    this.init();
+  },
+
   methods: {
+    init() {
+      this.initLoading = true;
+      const path = {
+        api: "api_project_index_projectMember",
+        data: {
+          project_id: this.$route.query.project_id
+        }
+      };
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    // socket请求统一处理
+    socketData(res) {
+      if (res !== '{"type":"ping"}') {
+        const resj = JSON.parse(res);
+        if (resj.code === -1) {
+          this.$message.error(resj.message);
+        } else {
+          // 获取主办人列表
+          if (resj.api === "api_project_index_projectMember") {
+            console.log(resj);
+            this.options = resj.data.members || [];
+          }
+          // 添加任务
+          if (resj.api === "api_task_index_add") {
+            console.log(resj);
+            if (resj.code === 0) {
+              this.$message.success("添加成功！");
+              this.$router.go(-1);
+            }
+          }
+        }
+      }
+      this.initLoading = false;
+    },
+
     backRouter() {
       this.$router.go(-1);
     },
     onSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          alert("submit!");
+          const path = {
+            api: "api_task_index_add",
+            data: {
+              name: this.form.name,
+              begin_time: this.form.begin_time,
+              end_time: this.form.end_time,
+              info: this.form.info,
+              host_id: `${this.form.host_id}`,
+              list_id: this.$route.query.list_id,
+              project_id: this.$route.query.project_id
+            }
+          };
+          this.socketApi.sendSock(JSON.stringify(path), res => {
+            this.socketData(res);
+          });
         } else {
           console.log("error submit!!");
           return false;
         }
       });
+    },
+    changeTime(val) {
+      this.form.begin_time = format(val[0], "yyyy-MM-dd");
+      this.form.end_time = format(val[1], "yyyy-MM-dd");
     }
   }
 };
