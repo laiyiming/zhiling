@@ -192,7 +192,7 @@ export default {
             localStorage.setItem("token", JSON.stringify(resj.data.token));
             this.dialogFormVisible = false;
             this.indexLoading = false;
-            console.log(resj);
+            this.init()
           }
           // 获取项目列表
           if (resj.api === "api_project_index_list") {

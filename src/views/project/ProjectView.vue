@@ -89,10 +89,11 @@
           >
         </div>
         <div class="project-view__right">
-          <span @click="rzDialog">写日志</span>
-          <span>交付</span>
+          <span @click="rzDialog('rzVisible')">写日志</span>
+          <span @click="rzDialog('jfVisible')">交付</span>
         </div>
       </div>
+      <template v-if="rzi_active === 1 || rzi_active === 2">
       <ul v-if="!$util.isEmpty(taskLog)" class="project-view__ul">
         <li v-for="item in taskLog" :key="item.duitime">
           <p>{{ getTime(item.duitime, "MM-dd") }}</p>
@@ -122,6 +123,34 @@
           </div>
         </li>
       </ul>
+      </template>
+      <template v-if="rzi_active === 3">
+        <div style="padding: 30px 30px 50px">
+          <el-table
+            ref="jfTable"
+            :data="tableData"
+            border
+          >
+            <el-table-column label="任务名称" prop="name" />
+            <el-table-column prop="name" label="交付名称" />
+            <el-table-column
+              prop="time"
+              label="交付时间"
+              show-overflow-tooltip
+            />
+            <el-table-column label="审核" prop="status">
+            <template slot-scope="scope">{{ scope.row.status }}</template>
+            </el-table-column>
+            <el-table-column label="操作" prop="name">
+              <template slot-scope="scope">
+                {{ scope.$index + 1 }}
+                <span>查看</span>
+                <span>下载</span>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </template>
     </div>
     <el-dialog title="" :visible.sync="dialogVisible" width="30%" center>
       <p>确定删除任务：任务名称任务名称？</p>
@@ -139,25 +168,37 @@
         @closeDialog="closeDialog"
       />
     </el-dialog>
+    <!-- 交付 -->
+    <el-dialog title="" :visible.sync="jfVisible" width="50%" center>
+      <Jiaofu
+        :project-id="`${$route.query.project_id}`"
+        :task-id="`${$route.query.task_id}`"
+        @closeDialog="closeDialog"
+      />
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { format } from "date-fns";
 import Journal from "./Journal";
+import Jiaofu from "./Jiaofu";
 export default {
   name: "ProjectMember",
   components: {
-    Journal
+    Journal,
+    Jiaofu
   },
   data() {
     return {
+      jfVisible: false,
       rzVisible: false,
       initLoading: false,
       dialogVisible: false,
       rzi_active: 1,
       taskInfo: null,
-      taskLog: []
+      taskLog: [],
+      tableData: []
     };
   },
 
@@ -197,12 +238,14 @@ export default {
     // 关闭弹窗
     closeDialog(type) {
       this.rzVisible = false;
+      this.jfVisible = false;
       if (type === "success") {
         this.init();
+        this.getJiaofu();
       }
     },
-    rzDialog() {
-      this.rzVisible = true;
+    rzDialog(type) {
+      this[type] = true;
     },
     // 获取状态对应值
     getStatus(status) {
@@ -240,7 +283,6 @@ export default {
     },
 
     getTime(time, type) {
-      console.log(time, type);
       return format(new Date(time), type);
     },
 
@@ -253,18 +295,11 @@ export default {
         } else {
           // 获取大类列表
           if (resj.api === "api_task_index_info") {
-            console.log(resj);
             this.taskInfo = resj.data.task || [];
             if (!this.$util.isEmpty(resj.data.task_log)) {
-              // this.taskLog = resj.data.task_log.map(i => ({
-              //   timeItem: this.getTime(i.time, 'yyyy-MM-dd'),
-              //   daTime: this.getTime(i.time, 'MM-dd'),
-              //   list: resj.data.task_log.filter(i => i.)
-              // }))
               this.taskLog = [];
               const list = [];
               resj.data.task_log.forEach(i => {
-                console.log(i);
                 const duitime = this.getTime(i.time, "yyyy-MM-dd");
                 const pushData = resj.data.task_log.filter(
                   i => this.getTime(i.time, "yyyy-MM-dd") === duitime
@@ -287,6 +322,12 @@ export default {
             this.$message.success("归档成功！");
             this.$router.go(-1);
           }
+          // 交付列表
+          if (resj.api === "api_task_deliver_list") {
+            if(resj.code === 0) {
+              this.tableData = resj.data.deliver
+            }
+          }
         }
       }
       this.initLoading = false;
@@ -299,7 +340,26 @@ export default {
 
     rziActive(type) {
       this.rzi_active = type;
+      if(type === 3) {
+        this.getJiaofu()
+      }
     },
+
+    getJiaofu() {
+      const path = {
+        api: "api_task_deliver_list",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id
+        }
+      };
+      this.initLoading = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    // 返回上一页
     backRouter() {
       this.$router.go(-1);
     },
@@ -462,6 +522,7 @@ export default {
         height: 36px;
         font-size: 14px;
         border-radius: 2px;
+        cursor: pointer;
       }
       > span:first-child {
         background: #2c6dd2;

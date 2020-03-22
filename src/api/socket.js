@@ -1,5 +1,6 @@
 // import store from '@/store';
 import { MessageBox } from "element-ui";
+import router from "../router/index.js";
 
 var websock = null;
 var global_callback = null;
@@ -99,7 +100,11 @@ function websocketOpen() {
     }
   };
   sendSock(JSON.stringify(path), res => {
-    console.log(res);
+    const resj = JSON.parse(res);
+    if (resj.code !== 0) {
+      localStorage.clear();
+      router.push("/");
+    }
   });
 }
 
