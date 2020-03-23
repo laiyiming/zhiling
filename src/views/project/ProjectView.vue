@@ -94,43 +94,39 @@
         </div>
       </div>
       <template v-if="rzi_active === 1 || rzi_active === 2">
-      <ul v-if="!$util.isEmpty(taskLog)" class="project-view__ul">
-        <li v-for="item in taskLog" :key="item.duitime">
-          <p>{{ getTime(item.duitime, "MM-dd") }}</p>
-          <div
-            v-for="items in item.list"
-            :key="items.Id"
-            class="project-view__ul-div"
-          >
-            <p class="project-view__ul-div__xiang">
-              <span />
-            </p>
-            <div class="project-view__ul-div-right">
-              <p></p>
-              <div class="project-view__ul-div-right-content">
-                <img src="@/assets/images/man.png" />
-                <div class="project-view__man-content">
-                  <p>{{ "--" }}(总结）</p>
-                  <div v-html="items.info" />
-                </div>
-                <div class="project-view__ul-div-right-abo">
-                  <i class="el-icon-time" />
-                  {{ getTime(items.time, "yyyy-MM-dd") }}
-                  <span>删除</span>
+        <ul v-if="!$util.isEmpty(taskLog)" class="project-view__ul">
+          <li v-for="item in taskLog" :key="item.duitime">
+            <p>{{ getTime(item.duitime, "MM-dd") }}</p>
+            <div
+              v-for="items in item.list"
+              :key="items.Id"
+              class="project-view__ul-div"
+            >
+              <p class="project-view__ul-div__xiang">
+                <span />
+              </p>
+              <div class="project-view__ul-div-right">
+                <p></p>
+                <div class="project-view__ul-div-right-content">
+                  <img src="@/assets/images/man.png" />
+                  <div class="project-view__man-content">
+                    <p>{{ "--" }}(总结）</p>
+                    <div v-html="items.info" />
+                  </div>
+                  <div class="project-view__ul-div-right-abo">
+                    <i class="el-icon-time" />
+                    {{ getTime(items.time, "yyyy-MM-dd") }}
+                    <span>删除</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+        </ul>
       </template>
       <template v-if="rzi_active === 3">
         <div style="padding: 30px 30px 50px">
-          <el-table
-            ref="jfTable"
-            :data="tableData"
-            border
-          >
+          <el-table ref="jfTable" :data="tableData" border>
             <el-table-column label="任务名称" prop="name" />
             <el-table-column prop="name" label="交付名称" />
             <el-table-column
@@ -139,7 +135,7 @@
               show-overflow-tooltip
             />
             <el-table-column label="审核" prop="status">
-            <template slot-scope="scope">{{ scope.row.status }}</template>
+              <template slot-scope="scope">{{ scope.row.status }}</template>
             </el-table-column>
             <el-table-column label="操作" prop="name">
               <template slot-scope="scope">
@@ -324,8 +320,8 @@ export default {
           }
           // 交付列表
           if (resj.api === "api_task_deliver_list") {
-            if(resj.code === 0) {
-              this.tableData = resj.data.deliver
+            if (resj.code === 0) {
+              this.tableData = resj.data.deliver;
             }
           }
         }
@@ -340,8 +336,8 @@ export default {
 
     rziActive(type) {
       this.rzi_active = type;
-      if(type === 3) {
-        this.getJiaofu()
+      if (type === 3) {
+        this.getJiaofu();
       }
     },
 
