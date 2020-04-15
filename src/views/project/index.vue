@@ -29,33 +29,6 @@
       </li>
     </ul>
     <el-dialog
-      title="登入窗口"
-      :visible.sync="dialogFormVisible"
-      :show-close="false"
-    >
-      <el-form :model="form">
-        <el-form-item label="手机号码" label-width="120px">
-          <el-input v-model="form.phone" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="验证码" label-width="120px">
-          <el-input v-model="form.code" autocomplete="off"></el-input>
-          <el-button
-            :disabled="(disabled = !show)"
-            style="width: 15%"
-            type="success"
-            @click="send"
-          >
-            <span v-show="show">获取验证码</span>
-            <span v-show="!show" class="count">{{ count }} s</span>
-          </el-button>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <!-- <el-button @click="dialogFormVisible = false">取 消</el-button> -->
-        <el-button type="primary" @click="loginTo">确 定</el-button>
-      </div>
-    </el-dialog>
-    <el-dialog
       :visible.sync="projectVisible"
       title="添加项目"
       custom-class="contentdialog"
@@ -87,7 +60,6 @@ export default {
     return {
       projectVisible: false,
       indexLoading: false,
-      dialogFormVisible: false,
       delVisible: false,
       form: {
         phone: null,
@@ -102,16 +74,7 @@ export default {
   },
 
   created() {
-    const _this = this;
-    const token = JSON.parse(localStorage.getItem("token"));
-    if (token === "" || token === null) {
-      this.dialogFormVisible = true;
-    } else {
-      this.dialogFormVisible = false;
-      setTimeout(function() {
-        _this.init();
-      }, 1000);
-    }
+    this.init()
   },
 
   methods: {
@@ -146,37 +109,6 @@ export default {
       });
     },
 
-    // 获取验证码
-    send() {
-      if (!this.timer) {
-        if (this.form.phone === "" || this.form.phone === null) {
-          this.$message.error("请填写手机号");
-          return false;
-        }
-        const path = {
-          api: "api_home_index_code",
-          data: {
-            phone: `${this.form.phone}`
-          }
-        };
-        this.socketApi.sendSock(JSON.stringify(path), res => {
-          this.socketData(res);
-        });
-
-        this.count = TIME_COUNT;
-        this.show = false;
-        this.timer = setInterval(() => {
-          if (this.count > 0 && this.count <= TIME_COUNT) {
-            this.count--;
-          } else {
-            this.show = true;
-            clearInterval(this.timer); // 清除定时器
-            this.timer = null;
-          }
-        }, 1000);
-      }
-    },
-
     socketData(res) {
       if (res !== '{"type":"ping"}') {
         const resj = JSON.parse(res);
@@ -187,13 +119,7 @@ export default {
           if (resj.api === "api_home_index_code") {
             console.log(resj);
           }
-          //登入
-          if (resj.api === "api_home_index_login") {
-            localStorage.setItem("token", JSON.stringify(resj.data.token));
-            this.dialogFormVisible = false;
-            this.indexLoading = false;
-            this.init();
-          }
+          
           // 获取项目列表
           if (resj.api === "api_project_index_list") {
             this.projectList = resj.data.projects;
@@ -227,30 +153,6 @@ export default {
         this.socketData(res);
       });
     },
-
-    loginTo() {
-      if (this.form.phone === "" || this.form.phone === null) {
-        this.$message.error("请填写手机号");
-        return false;
-      }
-      if (this.form.code === "" || this.form.code === null) {
-        this.$message.error("请填写验证码");
-        return false;
-      }
-
-      const path = {
-        api: "api_home_index_login",
-        data: {
-          phone: `${this.form.phone}`,
-          method: "code",
-          code: `${this.form.code}`
-        }
-      };
-      this.indexLoading = true;
-      this.socketApi.sendSock(JSON.stringify(path), res => {
-        this.socketData(res);
-      });
-    }
   }
 };
 </script>

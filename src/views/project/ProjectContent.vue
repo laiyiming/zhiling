@@ -334,9 +334,11 @@ export default {
       }
       this.dialogVisible = true;
       this.moduelType = type;
-      this.moduelId = list.moduel_id;
-      this.className = list.name;
-      this.listId = list.Id;
+      if(!this.$util.isEmpty(list)) {
+        this.moduelId = list.moduel_id;
+        this.className = list.name;
+        this.listId = list.Id;
+      };
     },
 
     // 添加编辑大类弹窗

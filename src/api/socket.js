@@ -1,6 +1,7 @@
 // import store from '@/store';
-import { MessageBox } from "element-ui";
+import { MessageBox, Message } from "element-ui";
 import router from "../router/index.js";
+import util from "../utils/util.js";
 
 var websock = null;
 var global_callback = null;
@@ -51,6 +52,14 @@ function sendSock(agentData, callback) {
 
 // 数据接收
 function websocketonmessage(e) {
+  console.log(e)
+  if (!util.isEmpty(e.data)) {
+    const res = JSON.parse(e.data);
+    if (res.code !== 0) {
+      Message.error(res.message);
+    }
+  }
+
   if (global_callback === null) {
     console.log("回调函数不存在");
   } else {
@@ -93,19 +102,23 @@ function websocketclose(e) {
 function websocketOpen() {
   console.log("连接成功");
   const token = JSON.parse(localStorage.getItem("token"));
-  const path = {
-    api: "api_home_index_reconnect",
-    data: {
-      token
-    }
-  };
-  sendSock(JSON.stringify(path), res => {
-    const resj = JSON.parse(res);
-    if (resj.code !== 0) {
-      localStorage.clear();
-      router.push("/");
-    }
-  });
+  if(!util.isEmpty(token)) {
+    const path = {
+      api: "api_home_index_reconnect",
+      data: {
+        token
+      }
+    };
+    sendSock(JSON.stringify(path), res => {
+      const resj = JSON.parse(res);
+      if (resj.code !== 0) {
+        console.log(858785)
+        localStorage.clear();
+        router.push("/");
+      }
+    });
+  }
+  
 }
 
 // 监听页面操作的时间戳

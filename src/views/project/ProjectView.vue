@@ -55,7 +55,7 @@
         <div>
           <p>协办人:</p>
           {{ "--" }}
-          <span>添加 <i /> 删除</span>
+          <span style="margin-left:49px" @click="addXiaban">添加</span> <i /> <span @click="delXiaban">删除</span>
         </div>
       </div>
     </div>
@@ -94,30 +94,29 @@
         </div>
       </div>
       <template v-if="rzi_active === 1 || rzi_active === 2">
-        <ul v-if="!$util.isEmpty(taskLog)" class="project-view__ul">
-          <li v-for="item in taskLog" :key="item.duitime">
-            <p>{{ getTime(item.duitime, "MM-dd") }}</p>
-            <div
-              v-for="items in item.list"
-              :key="items.Id"
-              class="project-view__ul-div"
-            >
-              <p class="project-view__ul-div__xiang">
-                <span />
-              </p>
-              <div class="project-view__ul-div-right">
-                <p></p>
-                <div class="project-view__ul-div-right-content">
-                  <img src="@/assets/images/man.png" />
-                  <div class="project-view__man-content">
-                    <p>{{ "--" }}(总结）</p>
-                    <div v-html="items.info" />
-                  </div>
-                  <div class="project-view__ul-div-right-abo">
-                    <i class="el-icon-time" />
-                    {{ getTime(items.time, "yyyy-MM-dd") }}
-                    <span>删除</span>
-                  </div>
+      <ul v-if="!$util.isEmpty(taskLog)" class="project-view__ul">
+        <li v-for="item in taskLog" :key="item.duitime">
+          <p>{{ getTime(item.duitime, "MM-dd") }}</p>
+          <div
+            v-for="items in item.list"
+            :key="items.Id"
+            class="project-view__ul-div"
+          >
+            <p class="project-view__ul-div__xiang">
+              <span />
+            </p>
+            <div class="project-view__ul-div-right">
+              <p></p>
+              <div class="project-view__ul-div-right-content">
+                <img src="@/assets/images/man.png" />
+                <div class="project-view__man-content">
+                  <p>{{ "--" }}(总结）</p>
+                  <div v-html="items.info" />
+                </div>
+                <div class="project-view__ul-div-right-abo">
+                  <i class="el-icon-time" />
+                  {{ getTime(items.time, "yyyy-MM-dd") }}
+                  <span @click="rzDel(items)">删除</span>
                 </div>
               </div>
             </div>
@@ -135,19 +134,39 @@
               show-overflow-tooltip
             />
             <el-table-column label="审核" prop="status">
-              <template slot-scope="scope">{{ scope.row.status }}</template>
+            <template slot-scope="scope">
+              <span v-if="scope.row.status === '0'"> 未审核 </span>
+              <span v-if="scope.row.status === '1'"> 已通过 </span>
+              <span v-if="scope.row.status === '2'"> 未通过 </span>
+              <span @click="statusClick(scope.row, true)"> 通过 </span>
+              <span @click="statusClick(scope.row, false)"> 不通过 </span>
+
+            </template>
             </el-table-column>
             <el-table-column label="操作" prop="name">
               <template slot-scope="scope">
-                {{ scope.$index + 1 }}
-                <span>查看</span>
-                <span>下载</span>
+                <span @click="jiaofuView(scope.row)">查看</span>
+                <span style="margin: 0 5px" @click="downListShow(scope.row)">下载</span>
+                <span @click="delJiaofu(scope.row)">删除</span>
               </template>
             </el-table-column>
           </el-table>
         </div>
       </template>
     </div>
+     <!-- 添加协办人列表 -->
+    <el-dialog title="" :visible.sync="dialogxieban" width="400px" center>
+      <el-checkbox-group v-model="checkedCities" @change="handleCheckedCitiesChange">
+        <el-checkbox v-for="(list, key) in untaskMember" :label="list" :key="key">{{list}}</el-checkbox>
+      </el-checkbox-group>
+    </el-dialog>
+     <!-- 删除协办人列表 -->
+    <el-dialog title="" :visible.sync="dialogdelxieban" width="400px" center>
+      <el-checkbox-group v-model="checkedCities" @change="handleCheckedCitiesChange">
+        <el-checkbox v-for="(list, key) in helpers" :label="list" :key="key">{{list}}</el-checkbox>
+      </el-checkbox-group>
+    </el-dialog>
+    <!-- 删除任务 -->
     <el-dialog title="" :visible.sync="dialogVisible" width="30%" center>
       <p>确定删除任务：任务名称任务名称？</p>
       <p>删除后，日志与文件均会消失，请及时备份</p>
@@ -172,6 +191,31 @@
         @closeDialog="closeDialog"
       />
     </el-dialog>
+    <!-- 通过 / 不通过 -->
+    <el-dialog :title="isPast ? '通过交付' : '不通过交付'" :visible.sync="isPVisible" width="50%" center>
+      <isPast
+        :project-id="`${$route.query.project_id}`"
+        :task-id="`${$route.query.task_id}`"
+        :deliever-id="delieverId"
+        :is-past="isPast"
+        :is-show="isPVisible"
+        @closeDialog="closeDialog"
+      />
+    </el-dialog>
+    <!-- 下载列表 -->
+    <el-dialog title="下载附件" :visible.sync="downDialog" width="718px" center>
+      <ul class="down-ul">
+        <li v-for="(item, key) in downList" :key="key">{{ item.name }} <span @click="downJF(item.Id)">下载</span></li>
+      </ul>
+    </el-dialog>
+
+    <!-- 交付查看 -->
+    <el-dialog title="详情" :visible.sync="jiaofuDialog" width="718px" center>
+      <template v-if="jiaofuData">
+      <p>{{ jiaofuData.title }}</p>
+      <div v-html="jiaofuData.content" />
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -179,14 +223,22 @@
 import { format } from "date-fns";
 import Journal from "./Journal";
 import Jiaofu from "./Jiaofu";
+import isPast from "./isPast";
 export default {
   name: "ProjectMember",
   components: {
     Journal,
-    Jiaofu
+    Jiaofu,
+    isPast
   },
   data() {
     return {
+      jiaofuDialog: false,
+      jiaofuData: null,
+      downDialog: false,
+      dialogdelxieban: false,
+      dialogxieban: false,
+      isPVisible: false,
       jfVisible: false,
       rzVisible: false,
       initLoading: false,
@@ -194,18 +246,56 @@ export default {
       rzi_active: 1,
       taskInfo: null,
       taskLog: [],
-      tableData: []
+      tableData: [],
+      delieverId: "",
+      isPast: true,
+      helpers: [],
+      untaskMember: [],
+      checkedCities: null,
+      downList: []
     };
   },
 
   created() {
-    this.init();
+   this.rziActive(1);
   },
   methods: {
-    // 删除任务
-    delRenwu() {
+    jiaofuView(item) {
+      console.log(item, 8858)
+      this.jiaofuData = item;
+      this.jiaofuDialog = true;
+    },
+    // 是否通过
+    statusClick(list, type) {
+      // 
+      if(type) {
+        this.isPast = true
+      } else {
+        this.isPast = false
+      }
+      this.isPVisible = true;
+      this.delieverId = `${list.Id}`;
+    },
+
+    // 添加协办人
+    addXiaban() {
       const path = {
-        api: "api_task_index_del",
+        api: "api_task_index_untaskMember",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id
+        }
+      };
+      this.dialogxieban = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    // 未添加协办人
+    delXiaban() {
+      const path = {
+        api: "api_task_index_helperList",
         data: {
           project_id: this.$route.query.project_id,
           task_id: this.$route.query.task_id
@@ -216,6 +306,91 @@ export default {
         this.socketData(res);
       });
     },
+
+    // 下载列表展示
+    downListShow(item) {
+      const path = {
+        api: "api_task_deliver_filelist",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id,
+          deliver_id: `${item.Id}`
+        }
+      };
+      this.initLoading = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    // 删除任务
+    delRenwu() {
+      const path = {
+        api: "api_task_index_del",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id
+        }
+      };
+      this.dialogxieban = true;
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
+    },
+
+    // 协办人积累
+    handleCheckedCitiesChange() {
+
+    },
+
+    // 删除交付
+    delJiaofu(list) {
+      this.$confirm("确定删除交付记录：硬件需求文档？", "删除交付记录", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "error"
+        })
+          .then(() => {
+            const path = {
+              api: "api_task_deliver_del",
+              data: {
+                project_id: this.$route.query.project_id,
+                task_id: this.$route.query.task_id,
+                deliever_id: list.Id
+              }
+            };
+            this.initLoading = true;
+            this.socketApi.sendSock(JSON.stringify(path), res => {
+              this.socketData(res);
+            });
+          })
+          .catch(() => {});
+    },
+
+    // 删除日志
+    rzDel(list) {
+      this.$confirm("确定删除该日志？", "删除日志", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "error"
+        })
+          .then(() => {
+            const path = {
+              api: "api_task_tasklog_del",
+              data: {
+                project_id: this.$route.query.project_id,
+                task_id: this.$route.query.task_id,
+                log_id: list.Id
+              }
+            };
+            this.initLoading = true;
+            this.socketApi.sendSock(JSON.stringify(path), res => {
+              this.socketData(res);
+            });
+          })
+          .catch(() => {});
+    },
+
     // 归档
     guidan() {
       const path = {
@@ -234,10 +409,12 @@ export default {
     // 关闭弹窗
     closeDialog(type) {
       this.rzVisible = false;
-      this.jfVisible = false;
+      this.rzVisible = false;
+      this.isPVisible = false;
       if (type === "success") {
-        this.init();
-        this.getJiaofu();
+        this.rziActive(1);
+        this.rziActive(2);
+        this.rziActive(3);
       }
     },
     rzDialog(type) {
@@ -262,20 +439,6 @@ export default {
           return "归档";
         default:
       }
-    },
-    // 获取详情数据
-    init() {
-      const path = {
-        api: "api_task_index_info",
-        data: {
-          project_id: this.$route.query.project_id,
-          task_id: this.$route.query.task_id
-        }
-      };
-      this.initLoading = true;
-      this.socketApi.sendSock(JSON.stringify(path), res => {
-        this.socketData(res);
-      });
     },
 
     getTime(time, type) {
@@ -308,11 +471,11 @@ export default {
               this.taskLog = this.unique(list, "duitime");
             }
           }
-          // 删除任务
-          if (resj.api === "api_task_index_del") {
-            this.$message.success("任务删除成功！");
-            this.$router.go(-1);
+          // 操作日志
+          if (resj.api === "api_task_index_operation") {
+            console.log(resj)
           }
+          
           // 归档
           if (resj.api === "api_task_index_setfile") {
             this.$message.success("归档成功！");
@@ -324,6 +487,57 @@ export default {
               this.tableData = resj.data.deliver;
             }
           }
+
+          // 删除任务
+          if (resj.api === "api_task_index_del") {
+            this.$message.success("任务删除成功！");
+            this.$router.go(-1);
+          }
+          // 删除任务日志
+          if (resj.api === "api_task_tasklog_del") {
+            this.$message.success("日志删除成功！");
+            this.rziActive(1);
+            this.rziActive(2);
+          }
+          // 删除交付
+          if (resj.api === "api_task_deliver_del") {
+            if(resj.code === 0) {
+              this.$message.success("交付删除成功！");
+              this.rziActive(3);
+            }
+          }
+
+          // 协办列表
+          if (resj.api === "api_task_index_helperList") {
+            if(resj.code === 0) {
+              this.helpers = resj.data.helpers;
+            }
+          }
+
+          // 协办列表
+          if (resj.api === "api_task_index_untaskMember") {
+            if(resj.code === 0) {
+              console.log(resj, 878)
+              // this.untaskMember = resj.data.helpers;
+            }
+          }
+
+          // 下载交付
+          if (resj.api === "api_task_deliver_download") {
+            if(resj.code === 0) {
+              console.log(resj)
+              // this.untaskMember = resj.data.helpers;
+            }
+          }
+
+          // 下载列表
+          if(resj.api === "api_task_deliver_filelist") {
+            if(resj.code === 0) {
+              this.downList = resj.data.deliver_files;
+              this.downDialog = true;
+            }
+          }
+          
         }
       }
       this.initLoading = false;
@@ -334,16 +548,36 @@ export default {
       return arr1.filter(a => !res.has(a[type]) && res.set(a[type], 1));
     },
 
-    rziActive(type) {
-      this.rzi_active = type;
-      if (type === 3) {
-        this.getJiaofu();
-      }
+    // 下载交付
+    downJF() {
+      const path = {
+        api: "api_task_deliver_download",
+        data: {
+          project_id: this.$route.query.project_id,
+          task_id: this.$route.query.task_id,
+          deliever_id: '1'
+        }
+      };
+      this.socketApi.sendSock(JSON.stringify(path), res => {
+        this.socketData(res);
+      });
     },
 
-    getJiaofu() {
+    rziActive(type) {
+      this.rzi_active = type;
+      let api = "";
+      if(type === 1) {
+        api = "api_task_index_info";
+      } 
+      if(type === 2) {
+        api = "api_task_index_operation"
+      }
+      if(type === 3) {
+        api = "api_task_deliver_list"
+      }
+
       const path = {
-        api: "api_task_deliver_list",
+        api,
         data: {
           project_id: this.$route.query.project_id,
           task_id: this.$route.query.task_id
@@ -472,17 +706,15 @@ export default {
       }
       > span {
         color: #2c6dd2;
-        margin-left: 49px;
         display: flex;
         align-items: center;
-
-        > i {
+      }
+      > i {
           height: 10px;
           width: 1px;
           background: #2c6dd2;
           margin: 0 8px;
         }
-      }
     }
   }
 
@@ -696,6 +928,23 @@ export default {
     & .el-button:last-child {
       background: #2c6dd2;
       color: #ffffff;
+    }
+  }
+  & .down-ul {
+    > li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 33px 0 50px;
+      height: 45px;
+      align-items: center;
+      border-bottom: 1px solid #E5E5E5;
+      font-size: 14px;
+      color: #666666;
+
+      > span {
+        color: #2C6DD2;
+        cursor: pointer;
+      }
     }
   }
 }

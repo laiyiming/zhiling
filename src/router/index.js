@@ -8,7 +8,7 @@ const router = new VueRouter({
   // mode: 'has',
   routes: [
     {
-      path: "/",
+      path: "/index",
       name: "首页",
       redirect: "/project",
       component: () =>
@@ -16,7 +16,7 @@ const router = new VueRouter({
     },
     ...roters,
     {
-      path: "/logo",
+      path: "/",
       name: "登入页",
       component: () =>
         import(/* webpackChunkName: "logo" */ "@/views/logo/index.vue")

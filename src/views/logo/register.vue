@@ -10,7 +10,7 @@
         <img src="@/assets/icon/phone.png" alt="" />
         <el-input v-model="phone" placeholder="请输入手机号" />
       </div>
-      <div class="logo-item">
+      <!-- <div class="logo-item">
         <img src="@/assets/icon/shuo.png" alt="" />
         <el-input
           v-model="code"
@@ -26,7 +26,7 @@
           <span v-show="show">获取验证码</span>
           <span v-show="!show" class="count">{{ count }} s</span>
         </el-button>
-      </div>
+      </div> -->
       <div class="logo-item">
         <img src="@/assets/icon/shuo.png" alt="" />
         <el-input v-model="password" type="password" placeholder="请输入密码" />
@@ -56,6 +56,10 @@ export default {
 
   methods: {
     register() {
+      if (this.$util.isEmpty(this.name)) {
+        this.$message.error("姓名不可为空");
+        return false;
+      }
       let reg = /^1\d{10}$/;
       if (
         this.$util.isEmpty(this.phone) ||
@@ -70,6 +74,18 @@ export default {
         this.$message.error("密码不可为空");
         return false;
       }
+
+      const path = {
+          api: "api_home_index_regist",
+          data: {
+            name: this.name,
+            phone: `${this.phone}`,
+            password: `${this.password}`
+          }
+        };
+        this.socketApi.sendSock(JSON.stringify(path), res => {
+          this.socketData(res);
+        });
     },
 
     // 获取验证码
@@ -120,7 +136,10 @@ export default {
         } else {
           // 获取验证码
           if (resj.api === "api_home_index_code") {
-            console.log(resj);
+            if(resj.code === 0) {
+              this.$message.success("注册成功！");
+              this.$router.go(-1);
+            }
           }
         }
       }
