@@ -6,11 +6,11 @@
         <img src="@/assets/icon/phone.png" alt="" />
         <el-input v-model="phone" placeholder="请输入手机号" />
       </div>
-      <!-- <div class="logo-item">
+      <div class="logo-item">
         <img src="@/assets/icon/shuo.png" alt="" />
         <el-input v-model="password" type="password" placeholder="请输入密码" />
-      </div> -->
-      <div class="logo-item">
+      </div>
+      <!-- <div class="logo-item">
         <img src="@/assets/icon/shuo.png" alt="" />
         <el-input
           v-model="code"
@@ -26,7 +26,7 @@
           <span v-show="show">获取验证码</span>
           <span v-show="!show" class="count">{{ count }} s</span>
         </el-button>
-      </div>
+      </div> -->
       <!-- <div class="logo-item">
         <el-checkbox v-model="checked">记住密码</el-checkbox>
         <span class="logo-item__reset-password" @click="routerTo('/logo/reset')"
@@ -51,7 +51,7 @@ export default {
       phone: "",
       password: "",
       checked: "",
-      code: '',
+      code: "",
       show: true, // 初始启用按钮
       count: "" // 初始化次数
     };
@@ -69,8 +69,13 @@ export default {
         return false;
       }
 
-      if (this.$util.isEmpty(this.code)) {
-        this.$message.error("请填写验证码");
+      // if (this.$util.isEmpty(this.code)) {
+      //   this.$message.error("请填写验证码");
+      //   return false;
+      // }
+
+      if (this.$util.isEmpty(this.password)) {
+        this.$message.error("密码不可为空");
         return false;
       }
 
@@ -78,19 +83,14 @@ export default {
         api: "api_home_index_login",
         data: {
           phone: `${this.phone}`,
-          method: "code",
-          code: `${this.code}`
+          method: "pwd",
+          password: `${this.password}`
         }
       };
       this.buttonLoading = true;
       this.socketApi.sendSock(JSON.stringify(path), res => {
         this.socketData(res);
       });
-
-      // if (this.$util.isEmpty(this.password)) {
-      //   this.$message.error("密码不可为空");
-      //   return false;
-      // }
     },
 
     // 获取验证码
@@ -141,8 +141,8 @@ export default {
           }
           //登入
           if (resj.api === "api_home_index_login") {
-            console.log(resj)
-            if(resj.code === 0) {
+            console.log(resj);
+            if (resj.code === 0) {
               localStorage.setItem("token", JSON.stringify(resj.data.token));
               this.$router.push({
                 path: "/project"
@@ -150,8 +150,6 @@ export default {
             } else {
               this.buttonLoading = false;
             }
-
-            
           }
         }
       }
